@@ -1,0 +1,1 @@
+In order to run this application, cd into module_1 and run the command: python run.py
