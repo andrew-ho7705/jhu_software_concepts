@@ -1,9 +1,15 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h2>{% block title %}Andrew Ho{% endblock title %}</h2>
+  {% block title %}<h2>Andrew Ho</h2>{% endblock title %}
 {% endblock header %}
 
 {% block content %}
-<h3>Master's student at Johns Hopkins University</h3>
+  <div class="home-body">
+    <section>
+      <p>Current Master's student at Johns Hopkins University</p>
+      <p>Andrew Ho began to work towards his degree in Artificial Intelligence in Fall of 2025. Having earning a degree in Computer Engineering from Penn State in 2024, he has professional experiences working on government contracts and startups, and hopes to soon begin contributing in the AI field.</p>
+    </section>
+    <img src="/static/headshot.png" />
+  </div>
 {% endblock content %}

@@ -1,8 +1,13 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h2>{% block title %}Contact{% endblock title %}</h2>
+  {% block title %}<h2>Contact</h2>{% endblock title %}
 {% endblock header %}
 
 {% block content %}
+  <div class="contact-body">
+    <p>Personal email: <a>andrewh6591@gmail.com</a></p>
+    <p>School email: <a>aho43@jhu.edu</a></p>
+    <a href="https://www.linkedin.com/in/andrewdho/">LinkedIn</a>
+  </div>
 {% endblock content %}
