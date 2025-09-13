@@ -29,7 +29,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python jhu_software_concepts/module_1/run.py"
+args = "python module_1/run.py"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
