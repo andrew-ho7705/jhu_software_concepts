@@ -1,16 +1,17 @@
-from urllib.request import urlopen
+import urllib3
 from bs4 import BeautifulSoup
 import re
 
 def scrape_data():
+  http = urllib3.PoolManager()
   
   base_url = "https://www.thegradcafe.com/survey/result/"
   data = []
   
   for i in range(986442, 986440, -1):
     url = base_url + str(i)
-    page = urlopen(url)
-    html = page.read().decode("utf-8")
+    response = http.request('GET', url)
+    html = response.data.decode("utf-8")
     soup = BeautifulSoup(html, "html.parser")
     dl = soup.find("dl")
   
