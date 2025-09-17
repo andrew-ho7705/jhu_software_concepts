@@ -1,6 +1,7 @@
 import urllib3
 from bs4 import BeautifulSoup
 import re
+import json
 
 def scrape_data():
   http = urllib3.PoolManager()
@@ -8,20 +9,24 @@ def scrape_data():
   base_url = "https://www.thegradcafe.com/survey/result/"
   data = []
   
-  for i in range(986442, 986440, -1):
+  for i in range(986446, 956000, -1):
     url = base_url + str(i)
     response = http.request('GET', url)
     html = response.data.decode("utf-8")
     soup = BeautifulSoup(html, "html.parser")
     dl = soup.find("dl")
   
-    page_data = {}
+    page_data = {
+      "url": url
+    }
     date_added = None
     status = None
   
     for div in dl.find_all('div', recursive=False):
       dt = div.find('dt')
       dd = div.find('dd')
+
+      # Grabbing GRE Scores
       if not dt or not dd:
         for li in soup.find_all('li'):
           spans = li.find_all('span')
@@ -41,7 +46,8 @@ def scrape_data():
     
       dt_text = dt.get_text(strip=True)
       dd_text = dd.get_text(strip=True)
-    
+
+      # Grabbing everything else
       match dt_text.lower():
         case "program":
           page_data["program"] = dd_text
@@ -75,10 +81,14 @@ def scrape_data():
         case "undergrad gpa":
           if dd_text != "0.00" and dd_text != "0":
             page_data["gpa"] = dd_text
+            
     page_data["status"] += f' on {date_added[:5]}'
-    page_data["term"] = f'Fall {date_added[6:11]}' if (status == "Accepted" and int(date_added[:2]) >= 1 and int(date_added[:2]) <= 8) else f'Spring {date_added[6:11]}'
+    if (status != "Rejected" and status != "Interview" and status != "Wait listed"):
+      page_data["term"] = f'Fall {date_added[6:11]}' if (status == "Accepted" and int(date_added[:2]) >= 1 and int(date_added[:2]) < 8) else f'Spring {date_added[6:11]}'
     data.append(page_data)  
-    
-  print(data)
+
+  filename = "applicant_data.json"
+  with open(filename, 'w') as f:
+    json.dump(data, f, indent=4)
 
 scrape_data()
