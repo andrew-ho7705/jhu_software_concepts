@@ -13,8 +13,6 @@ def clean_data(raw_data):
         entry["program"] += f', {entry["university"]}'
         entry["university"] = ""
 
-    entry["Degree"] = entry["Degree"] if entry["Degree"] in ('Masters', 'PhD') else ""
-
     cleaned = {k: v for k, v in entry.items() if v or k == "comments"}
     if "comments" not in cleaned:
         cleaned["comments"] = ""
@@ -29,10 +27,12 @@ def save_data(data, path):
   with open(path, "w", encoding="utf-8") as f:
       json.dump(data, f, indent=4)
 
-survey_data = scrape_survey_page(pages=30000)
-raw_data = scrape_raw_data(986446, 920000, survey_data)
+survey_data = scrape_survey_page(pages=1600)
+raw_data = scrape_raw_data(survey_data)
 cleaned = clean_data(raw_data)
 
 save_data(cleaned, "applicant_data.json")
 
 loaded = load_data("applicant_data.json")
+
+print(len(loaded))
