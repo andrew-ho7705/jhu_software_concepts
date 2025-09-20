@@ -1,5 +1,5 @@
 import json
-from scrape import scrape_survey_page, scrape_raw_data
+from .scrape import scrape_survey_page, scrape_raw_data
 
 # Remove fields from the dataset according to the example in the pdf
 def _remove_falsy_keys(entry):
