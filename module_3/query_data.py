@@ -155,4 +155,6 @@ def query_data(execute_query):
 
 
 if __name__ == "__main__":
-    query_data()
+    data = query_data(execute_query)
+    for f, k in data.items():
+        print(f"{f}: {k}")
