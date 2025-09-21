@@ -2,31 +2,32 @@ import psycopg2
 
 
 def connect_to_db():
-    return psycopg2.connect(dbname="postgres", user="postgres")
+    return psycopg2.connect(
+        dbname="postgres",
+        user="postgres",
+        host="localhost",
+        port=5432
+    )
 
 
 def execute_query(description, query, multi_row=False):
     conn = connect_to_db()
     cursor = conn.cursor()
-
+    results = None
     try:
         cursor.execute(query)
         if multi_row:
             results = cursor.fetchall()
-            print(f"{description}")
-            if results:
-                for row in results:
-                    print(f" {row}")
-            else:
-                print(" No data")
         else:
             result = cursor.fetchone()
-            print(f"{description}\n {result[0] if result else 'No data'}")
+            results = result[0] if result else None
+        print(f"[DEBUG] {description}: {results}")
     except Exception as e:
         print(f"Error executing query: {e}")
     finally:
         cursor.close()
         conn.close()
+    return results
 
 
 def query_data():

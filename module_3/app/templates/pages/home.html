@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="home-body">
+
+  <h2>1. Fall 2025 Applicants</h2>
+  <p>Total Applicants: {{ q1 }}</p>
+
+  <h2>2. Percentage of International Students</h2>
+  <p>{{ q2 }}%</p>
+
+  <h2>3. Averages</h2>
+  <ul>
+    <li>Average GPA: {{ "%.2f"|format(q3a) if q3a else 'N/A' }}</li>
+    <li>Average GRE: {{ "%.2f"|format(q3b) if q3b else 'N/A' }}</li>
+    <li>Average GRE V: {{ "%.2f"|format(q3c) if q3c else 'N/A' }}</li>
+    <li>Average GRE AW: {{ "%.2f"|format(q3d) if q3d else 'N/A' }}</li>
+  </ul>
+
+  <h2>4. Average GPA of American Students in Fall 2025</h2>
+  <p>{{ "%.2f"|format(q4) if q4 else 'N/A' }}</p>
+
+  <h2>5. Percentage of Fall 2025 Acceptances</h2>
+  <p>{{ q5 }}%</p>
+
+  <h2>6. Average GPA of Fall 2025 Acceptances</h2>
+  <p>{{ "%.2f"|format(q6) if q6 else 'N/A' }}</p>
+
+  <h2>7. JHU Computer Science Applications (Masters)</h2>
+  <p>{{ q7 }}</p>
+
+  <h2>8. 2025 Georgetown CS Acceptances (PhD)</h2>
+  <p>{{ q8 }}</p>
+
+  <h2>9. Acceptance Rate by Degree Level</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Degree</th>
+        <th>Acceptance Rate (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for degree, rate in q9 %}
+      <tr>
+        <td>{{ degree }}</td>
+        <td>{{ "%.2f"|format(rate) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>10. Top 10 Universities with Lowest Acceptance Rate</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>University</th>
+        <th>Acceptance Rate (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for uni, rate in q10 %}
+      <tr>
+        <td>{{ uni }}</td>
+        <td>{{ "%.2f"|format(rate) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+{% endblock content %}
