@@ -2,6 +2,14 @@
 
 {% block content %}
 <div class="home-body">
+  <div class="action-buttons">
+    <form action="{{ url_for('pages.pull_data') }}" method="post">
+      <button type="submit">Pull Data</button>
+    </form>
+    <form action="{{ url_for('pages.update_analysis') }}" method="post">
+      <button type="submit">Update Analysis</button>
+    </form>
+  </div>
 
   <h2>1. How many entries do you have in your database who have applied for Fall 2025?</h2>
   <p>Total Applicants: {{ q1 }}</p>
