@@ -22,18 +22,8 @@ args = "Flask Server"
 name = "Flask Server"
 author = "agent"
 
-# [[workflows.workflow.tasks]]
-# task = "shell.exec"
-# args = "python module_1/run.py"
-# waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python module_1/run.py"
-waitForPort = 5000
 
 [[ports]]
 localPort = 5000
