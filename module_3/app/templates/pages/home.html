@@ -4,9 +4,11 @@
 <div class="home-body">
   <div class="action-buttons">
     <form action="{{ url_for('pages.pull_data') }}" method="post">
+      <label for="pull_data">Click to pull new data from TheGradCafe: </label>
       <button type="submit">Pull Data</button>
     </form>
     <form action="{{ url_for('pages.update_analysis') }}" method="post">
+      <label for="update_analysis">Click to reanalyze the data: </label>
       <button type="submit">Update Analysis</button>
     </form>
   </div>

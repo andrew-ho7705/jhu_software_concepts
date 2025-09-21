@@ -1,6 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for
 from ..query_data import execute_query, connect_to_db, query_data
 from module_2 import scrape, clean
+from ..load_data import parse_date, handle_score
+import requests
+import json
 
 bp = Blueprint("pages", __name__)
 scrape_running = False
@@ -18,49 +21,98 @@ def pull_data():
 
     scrape_running = True
     try:
-        survey_data = scrape.scrape_survey_page(pages=3)
+        print("Scraping data...")
+        survey_data = scrape.scrape_survey_page(pages=1)
         raw_data = scrape.scrape_raw_data(survey_data)
         cleaned = clean.clean_data(raw_data)
+        print(f"Scraped {len(cleaned)} entries")
 
+        # Check which entries already exist in database
         conn = connect_to_db()
         cur = conn.cursor()
+        
+        urls = [entry["url"] for entry in cleaned]
+        if urls:
+            placeholders = ','.join(['%s'] * len(urls))
+            cur.execute(f"SELECT url FROM applicants WHERE url IN ({placeholders})", urls)
+            existing_urls = {row[0] for row in cur.fetchall()}
+            
+            # Filter out existing entries
+            new_entries = [entry for entry in cleaned if entry["url"] not in existing_urls]
+            print(f"Found {len(new_entries)} new entries to process")
+        else:
+            new_entries = cleaned
 
-        for entry in cleaned:
-            print(entry)
-            cur.execute("SELECT 1 FROM applicants WHERE url = %s", (entry["url"],))
-            if not cur.fetchone():
-                cur.execute("""
-                            INSERT INTO applicants (
-                                program, comments, date_added, url, status, term, 
-                                us_or_international, gpa, gre, gre_v, gre_aw, degree, 
-                                llm_generated_program, llm_generated_university
-                            )
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                            """, 
-                            (
-                                entry["program"],
-                                entry["comments"],
-                                entry["date_added"],
-                                entry["url"],
-                                entry["status"],
-                                entry["term"],
-                                entry["US/International"],
-                                entry.get("GPA", ""),
-                                entry.get("GRE", ""),
-                                entry.get("GRE_V", ""),
-                                entry.get("GRE_AW", ""),
-                                entry["Degree"],
-                                entry["llm_generated_program"],
-                                entry["llm_generated_university"],
-                            ))
+        # Run new entries through LLM
+        if new_entries:
+            print(f"Processing {len(new_entries)} new entries through LLM...")
+            
+            llm_data = []
+            entry_mapping = {}
+            
+            for i, entry in enumerate(new_entries):
+                program_text = entry.get("program").strip() or entry.get("comments", "").strip()
+                if program_text:
+                    llm_data.append({"program": program_text})
+                    entry_mapping[len(llm_data) - 1] = i
 
+            batch_size = 10
+            for batch_start in range(0, len(llm_data), batch_size):
+                batch_end = min(batch_start + batch_size, len(llm_data))
+                batch_data = llm_data[batch_start:batch_end]
+                
+                try:
+                    llm_url = "http://localhost:8000/standardize"
+                    response = requests.post(llm_url, json=batch_data, timeout=60)
+                    response.raise_for_status()
+                    
+                    llm_results = response.json()
+                    processed_entries = llm_results.get("rows", [])
+                    
+                    for j, processed_entry in enumerate(processed_entries):
+                        original_index = entry_mapping[batch_start + j]
+                        new_entries[original_index]["llm_generated_program"] = processed_entry.get("llm-generated-program", "")
+                        new_entries[original_index]["llm_generated_university"] = processed_entry.get("llm-generated-university", "")
+                    
+                except Exception as e:
+                    print(f"Error processing LLM batch: {e}")
+
+        if new_entries:
+            insert_data = []
+            for entry in new_entries:
+                insert_data.append((
+                    entry["program"],
+                    entry["comments"],
+                    parse_date(entry["date_added"]),
+                    entry["url"],
+                    entry["status"],
+                    entry["term"],
+                    entry["US/International"],
+                    handle_score(entry.get("GPA", "")),
+                    handle_score(entry.get("GRE", "")),
+                    handle_score(entry.get("GRE_V", "")),
+                    handle_score(entry.get("GRE_AW", "")),
+                    entry["Degree"],
+                    entry.get("llm_generated_program", ""),
+                    entry.get("llm_generated_university", ""),
+                ))
+            
+            cur.executemany("""
+                INSERT INTO applicants (
+                    program, comments, date_added, url, status, term, 
+                    us_or_international, gpa, gre, gre_v, gre_aw, degree, 
+                    llm_generated_program, llm_generated_university
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, insert_data)
 
         conn.commit()
         cur.close()
         conn.close()
 
-        print("Scrape complete:", len(cleaned))
+        print(f"Scrape complete: {len(new_entries)} new entries added")
 
+    except Exception as e:
+        print(f"Error in pull_data: {e}")
     finally:
         scrape_running = False
 
@@ -70,9 +122,11 @@ def pull_data():
 def update_analysis():
     global scrape_running
     if scrape_running:
-        print("Currently reanalyzing")
-        # flash("Cannot update analysis while data pull is running.", "warning")
+        print("Cannot update analysis while data pull is running.")
     else:
-        _ = query_data(execute_query)
-        # flash("Analysis updated with the latest data!", "success")
+        try:
+            query_data(execute_query)
+            print("Analysis updated successfully")
+        except Exception as e:
+            print(f"Error updating analysis: {e}")
     return redirect(url_for('pages.home'))
