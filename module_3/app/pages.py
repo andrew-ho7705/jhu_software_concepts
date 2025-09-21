@@ -6,7 +6,7 @@ bp = Blueprint("pages", __name__)
 @bp.route("/")
 def home():
     # Query 1
-    q1 = execute_query("Fall 2025 Applicants", 
+    q1 = execute_query("What percentage of entries are from international students (not American or Other) (to two decimal places)?", 
                       """
                       SELECT COUNT(*) 
                       FROM applicants 
@@ -107,7 +107,7 @@ def home():
                        AND llm_generated_university LIKE '%Georgetown%'
                        """)
 
-    Query 9
+    # Query 9
     q9 = execute_query("Acceptance rate by degree level", 
                        """
                        SELECT 
@@ -122,7 +122,7 @@ def home():
                        """, 
                        multi_row=True)
 
-    Query 10
+    # Query 10
     q10 = execute_query("Top 10 universities by acceptance rate", 
                         """
                         SELECT 
