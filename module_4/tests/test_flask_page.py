@@ -1,24 +1,13 @@
 import pytest
-from module_4.src.app.app import app as flask_app
-
-
-@pytest.fixture
-def app():
-    """Use the global Flask app instance."""
-    flask_app.config.update({"TESTING": True})
-    return flask_app
-
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
 
 @pytest.mark.parametrize("page_name, method, expected_result",
 [
     ("/", "GET", 200),
-    ("/pull_data", "POST", 302),
-    ("/update_analysis", "POST", 302),
+    ("/pull_data", "POST", 200),
+    ("/update_analysis", "POST", 200),
 ])
+
+@pytest.mark.web
 def test__page_load(page_name, expected_result, method, client):
     if method == "GET":
         response = client.get(page_name)

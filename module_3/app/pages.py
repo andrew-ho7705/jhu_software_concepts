@@ -3,7 +3,6 @@ from ..query_data import execute_query, connect_to_db, query_data
 from module_2 import scrape, clean
 from ..load_data import parse_date, handle_score
 import requests
-import json
 
 bp = Blueprint("pages", __name__)
 scrape_running = False

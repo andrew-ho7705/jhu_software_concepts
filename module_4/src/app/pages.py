@@ -1,9 +1,8 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, jsonify
 from ..query_data import execute_query, connect_to_db, query_data
 from module_2 import scrape, clean
 from ..load_data import parse_date, handle_score
 import requests
-import json
 
 bp = Blueprint("pages", __name__)
 scrape_running = False
@@ -17,7 +16,7 @@ def home():
 def pull_data():
     global scrape_running
     if scrape_running:
-        return redirect(url_for('pages.home'))
+        return jsonify({"error": "Busy"}), 409
 
     scrape_running = True
     try:
@@ -116,17 +115,17 @@ def pull_data():
     finally:
         scrape_running = False
 
-    return redirect(url_for('pages.home'))
+    return jsonify({"message": "Success"}), 200
 
 @bp.route('/update_analysis', methods=['POST'])
 def update_analysis():
     global scrape_running
     if scrape_running:
-        print("Cannot update analysis while data pull is running.")
+        return jsonify({"error": "Busy"}), 409
     else:
         try:
             query_data(execute_query)
             print("Analysis updated successfully")
         except Exception as e:
             print(f"Error updating analysis: {e}")
-    return redirect(url_for('pages.home'))
+    return jsonify({"message": "Success"}), 200
