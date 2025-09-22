@@ -10,22 +10,18 @@ def connect_to_db():
     )
 
 
-def execute_query(description, query, multi_row=False):
+def execute_query(query, multi_row=False):
     conn = connect_to_db()
     cursor = conn.cursor()
     results = None
-    try:
-        cursor.execute(query)
-        if multi_row:
-            results = cursor.fetchall()
-        else:
-            result = cursor.fetchone()
-            results = result[0] if result else None
-    except Exception as e:
-        print(f"Error executing query: {e}")
-    finally:
-        cursor.close()
-        conn.close()
+    cursor.execute(query)
+    if multi_row:
+        results = cursor.fetchall()
+    else:
+        result = cursor.fetchone()
+        results = result[0] if result else None
+    cursor.close()
+    conn.close()
     return results
 
 
@@ -156,5 +152,3 @@ def query_data(execute_query):
 
 if __name__ == "__main__":
     data = query_data(execute_query)
-    for f, k in data.items():
-        print(f"{f}: {k}")

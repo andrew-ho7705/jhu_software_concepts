@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, jsonify
+from flask import Blueprint, render_template, jsonify
 from ..query_data import execute_query, connect_to_db, query_data
 from module_2 import scrape, clean
 from ..load_data import parse_date, handle_score
@@ -39,8 +39,6 @@ def pull_data(table_name="applicants"):
             # Filter out existing entries
             new_entries = [entry for entry in cleaned if entry["url"] not in existing_urls]
             print(f"Found {len(new_entries)} new entries to process")
-        else:
-            new_entries = cleaned
 
         # Run new entries through LLM
         if new_entries:
@@ -60,21 +58,17 @@ def pull_data(table_name="applicants"):
                 batch_end = min(batch_start + batch_size, len(llm_data))
                 batch_data = llm_data[batch_start:batch_end]
                 
-                try:
-                    llm_url = "http://localhost:8000/standardize"
-                    response = requests.post(llm_url, json=batch_data, timeout=60)
-                    response.raise_for_status()
-                    
-                    llm_results = response.json()
-                    processed_entries = llm_results.get("rows", [])
-                    
-                    for j, processed_entry in enumerate(processed_entries):
-                        original_index = entry_mapping[batch_start + j]
-                        new_entries[original_index]["llm_generated_program"] = processed_entry.get("llm-generated-program", "")
-                        new_entries[original_index]["llm_generated_university"] = processed_entry.get("llm-generated-university", "")
-                    
-                except Exception as e:
-                    print(f"Error processing LLM batch: {e}")
+                llm_url = "http://localhost:8000/standardize"
+                response = requests.post(llm_url, json=batch_data, timeout=60)
+                response.raise_for_status()
+                
+                llm_results = response.json()
+                processed_entries = llm_results.get("rows", [])
+                
+                for j, processed_entry in enumerate(processed_entries):
+                    original_index = entry_mapping[batch_start + j]
+                    new_entries[original_index]["llm_generated_program"] = processed_entry.get("llm-generated-program", "")
+                    new_entries[original_index]["llm_generated_university"] = processed_entry.get("llm-generated-university", "")
 
         if new_entries:
             insert_data = []
@@ -124,9 +118,7 @@ def update_analysis():
     if scrape_running:
         return jsonify({"error": "Busy"}), 409
     else:
-        try:
-            query_data(execute_query)
-            print("Analysis updated successfully")
-        except Exception as e:
-            print(f"Error updating analysis: {e}")
+        query_data(execute_query)
+        print("Analysis updated successfully")
+
     return jsonify({"message": "Success"}), 200

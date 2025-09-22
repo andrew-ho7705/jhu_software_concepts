@@ -54,55 +54,43 @@ def parse_date(date_string):
 
         month = month_names.get(month_name.lower())
         if month:
-            try:
-                return datetime.datetime(int(year), month, int(day)).date()
-            except (ValueError, TypeError):
-                return None
-
+            return datetime.datetime(int(year), month, int(day)).date()
     return None
 
 
-def load_to_database():
+def load_to_database(table):
     conn = psycopg2.connect(dbname="postgres", user="postgres")
     data = load_data("../module_2/llm_extend_applicant_data.json")
 
-    try:
-        with conn.cursor() as cur:
-            for record in data:
-                cur.execute(
-                    """
-                    INSERT INTO applicants (
-                        program, comments, date_added, url, status, term, 
-                        us_or_international, gpa, gre, gre_v, gre_aw, degree, 
-                        llm_generated_program, llm_generated_university) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """,
-                    (
-                        record.get("program"),
-                        record.get("comments"),
-                        parse_date(record.get("date_added")),
-                        record.get("url"),
-                        record.get("status"),
-                        record.get("term"),
-                        record.get("US/International"),
-                        handle_score(record.get("GPA")),
-                        handle_score(record.get("GRE")),
-                        handle_score(record.get("GRE_V")),
-                        handle_score(record.get("GRE_AW")),
-                        record.get("Degree"),
-                        record.get("llm-generated-program"),
-                        record.get("llm-generated-university"),
-                    ),
-                )
-        conn.commit()
-
-    except Exception as e:
-        print(f"Error inserting data: {e}")
-        conn.rollback()
-        raise
-
-    finally:
-        conn.close()
+    with conn.cursor() as cur:
+        for record in data:
+            cur.execute(
+                f"""
+                INSERT INTO {table} (
+                    program, comments, date_added, url, status, term, 
+                    us_or_international, gpa, gre, gre_v, gre_aw, degree, 
+                    llm_generated_program, llm_generated_university) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+                (
+                    record.get("program"),
+                    record.get("comments"),
+                    parse_date(record.get("date_added")),
+                    record.get("url"),
+                    record.get("status"),
+                    record.get("term"),
+                    record.get("US/International"),
+                    handle_score(record.get("GPA")),
+                    handle_score(record.get("GRE")),
+                    handle_score(record.get("GRE_V")),
+                    handle_score(record.get("GRE_AW")),
+                    record.get("Degree"),
+                    record.get("llm-generated-program"),
+                    record.get("llm-generated-university"),
+                ),
+            )
+    conn.commit()
+    conn.close()
 
 
 if __name__ == "__main__":
