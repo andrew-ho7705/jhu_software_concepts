@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="home-body">
+  <div class="action-buttons">
+    <form action="{{ url_for('pages.pull_data') }}" method="post">
+      <label for="pull_data">Click to pull new data from TheGradCafe: </label>
+      <button type="submit">Pull Data</button>
+    </form>
+    <form action="{{ url_for('pages.update_analysis') }}" method="post">
+      <label for="update_analysis">Click to reanalyze the data: </label>
+      <button type="submit">Update Analysis</button>
+    </form>
+  </div>
+
+  <h2>1. How many entries do you have in your database who have applied for Fall 2025?</h2>
+  <p>Answer: Total Applicants: {{ q1 }}</p>
+
+  <h2>2. What percentage of entries are from international students (not American or Other)?</h2>
+  <p>Answer: {{ q2 }}%</p>
+
+  <h2>3. What is the average GPA, GRE, GRE V, GRE AW of applicants who provide these metrics?</h2>
+  <ul>
+    <li>Answer: Average GPA: {{ "%.2f"|format(q3a) }}</li>
+    <li>Answer: Average GRE: {{ "%.2f"|format(q3b) }}</li>
+    <li>Answer: Average GRE V: {{ "%.2f"|format(q3c) }}</li>
+    <li>Answer: Average GRE AW: {{ "%.2f"|format(q3d) }}</li>
+  </ul>
+
+  <h2>4. What is their average GPA of American students in Fall 2025?</h2>
+  <p>Answer: {{ "%.2f"|format(q4) }}</p>
+
+  <h2>5. What percent of entries for Fall 2025 are Acceptances?</h2>
+  <p>Answer: {{ q5 }}%</p>
+
+  <h2>6. What is the average GPA of applicants who applied for Fall 2025 who are Acceptances?</h2>
+  <p>Answer: {{ "%.2f"|format(q6) }}</p>
+
+  <h2>7. How many entries are from applicants who applied to JHU for a masters degree in Computer Science? (Masters)</h2>
+  <p>Answer: {{ q7 }}</p>
+
+  <h2>8. How many entries from 2025 are acceptances from applicants who applied to Georgetown University for a PhD in Computer Science? (PhD)</h2>
+  <p>Answer: {{ q8 }}</p>
+
+  <h2>9. What is the acceptance rate by degree level?</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Degree</th>
+        <th>Acceptance Rate (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for degree, rate in q9 %}
+      <tr>
+        <td class="degree">{{ degree }}</td>
+        <td>{{ "%.2f"|format(rate) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>10. Which universities have the lowest acceptance rate?</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>University</th>
+        <th>Acceptance Rate (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for uni, rate in q10 %}
+      <tr>
+        <td class="university">{{ uni }}</td>
+        <td>{{ "%.2f"|format(rate) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+{% endblock content %}
