@@ -8,7 +8,7 @@ import pytest
 ])
 
 @pytest.mark.web
-def test__page_load(page_name, expected_result, method, client):
+def test_page_load(page_name, expected_result, method, client):
     if method == "GET":
         response = client.get(page_name)
     else:

@@ -47,14 +47,14 @@
     <thead>
       <tr>
         <th>Degree</th>
-        <th>Acceptance Rate (%)</th>
+        <th>Acceptance Rate</th>
       </tr>
     </thead>
     <tbody>
       {% for degree, rate in q9 %}
       <tr>
         <td class="degree">{{ degree }}</td>
-        <td>{{ "%.2f"|format(rate) }}</td>
+        <td>{{ "%.2f"|format(rate) }}%</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -65,14 +65,14 @@
     <thead>
       <tr>
         <th>University</th>
-        <th>Acceptance Rate (%)</th>
+        <th>Acceptance Rate</th>
       </tr>
     </thead>
     <tbody>
       {% for uni, rate in q10 %}
       <tr>
         <td class="university">{{ uni }}</td>
-        <td>{{ "%.2f"|format(rate) }}</td>
+        <td>{{ "%.2f"|format(rate) }}%</td>
       </tr>
       {% endfor %}
     </tbody>

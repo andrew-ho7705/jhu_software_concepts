@@ -40,7 +40,6 @@ def example_applicant_data():
 
 @pytest.mark.buttons
 def test_pull_data_success(client, monkeypatch, example_applicant_data):
-    # Patch the function your route calls to return the fixture data
     def fake_loader():
         return example_applicant_data
 
@@ -60,7 +59,6 @@ def test_update_analysis_success(client):
 
 @pytest.mark.buttons
 def test_busy_gating(client, monkeypatch):
-    # Pretend the app is already busy
     monkeypatch.setattr("module_4.src.app.pages.scrape_running", True)
 
     resp1 = client.post("/pull_data")
