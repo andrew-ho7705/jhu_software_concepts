@@ -13,7 +13,7 @@ def home():
     return render_template("pages/home.html", **results)
 
 @bp.route('/pull_data', methods=['POST'])
-def pull_data():
+def pull_data(table_name="applicants"):
     global scrape_running
     if scrape_running:
         return jsonify({"error": "Busy"}), 409
@@ -33,7 +33,7 @@ def pull_data():
         urls = [entry["url"] for entry in cleaned]
         if urls:
             placeholders = ','.join(['%s'] * len(urls))
-            cur.execute(f"SELECT url FROM applicants WHERE url IN ({placeholders})", urls)
+            cur.execute(f"SELECT url FROM {table_name} WHERE url IN ({placeholders})", urls)
             existing_urls = {row[0] for row in cur.fetchall()}
             
             # Filter out existing entries
@@ -96,12 +96,13 @@ def pull_data():
                     entry.get("llm_generated_university", ""),
                 ))
             
-            cur.executemany("""
-                INSERT INTO applicants (
+            cur.executemany(f"""
+                INSERT INTO {table_name} (
                     program, comments, date_added, url, status, term, 
                     us_or_international, gpa, gre, gre_v, gre_aw, degree, 
                     llm_generated_program, llm_generated_university
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (url) DO NOTHING;
             """, insert_data)
 
         conn.commit()

@@ -11,7 +11,7 @@ import pytest
 def test_page_load(page_name, expected_result, method, client):
     if method == "GET":
         response = client.get(page_name)
-    else:
+    if method == "POST":
         response = client.post(page_name)
 
     assert response.status_code == expected_result
