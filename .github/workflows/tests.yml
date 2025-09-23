@@ -14,7 +14,7 @@ jobs:
     
     services:
       postgres:
-        image: postgres:13
+        image: postgres:17
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_USER: postgres
@@ -29,7 +29,7 @@ jobs:
     
     strategy:
       matrix:
-        python-version: ["3.11"]  # Test with just one version first
+        python-version: ["3.11"]
 
     steps:
     - name: Checkout repository
@@ -54,29 +54,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Debug - Test imports
-      run: |
-        python -c "import psycopg; print('psycopg imported successfully')"
-        python -c "import flask; print('flask imported successfully')"
-        python -c "import pytest; print('pytest imported successfully')"
-
-    - name: Debug - Database connection
-      env:
-        DATABASE_URL: postgresql://postgres@localhost:5432/postgres
-      run: |
-        python -c "
-        import os
-        import psycopg
-        print(f'DATABASE_URL: {os.environ.get(\"DATABASE_URL\")}')
-        try:
-            conn = psycopg.connect(os.environ.get('DATABASE_URL'))
-            print('Database connection successful')
-            conn.close()
-        except Exception as e:
-            print(f'Database connection failed: {e}')
-        "
-
-    - name: Run tests with full output
+    - name: Run tests
       env:
         DATABASE_URL: postgresql://postgres@localhost:5432/postgres
         PYTHONPATH: ${{ github.workspace }}
