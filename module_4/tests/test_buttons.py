@@ -17,8 +17,13 @@ def test_pull_data_success(client, mock_llm, monkeypatch, example_applicant_data
     assert b"Success" in resp.data
 
 @pytest.mark.buttons
-def test_update_analysis_success(client, mock_llm):
+def test_update_analysis_success(client, mock_llm, monkeypatch):
     # Test POST /update-analysis (or whatever you named the path posting the update analysis request)
+    fake_results = {
+        "q1": 6640, "q2": 60.60, "q3a": 3.79, "q3b": 177.39, "q3c": 159.67, "q3d": 6.35,
+        "q4": 3.77, "q5": 35.94, "q6": 3.76, "q7": 13, "q8": 0, "q9": [], "q10": []
+    }
+    monkeypatch.setattr("module_4.src.app.pages.query_data", lambda execute_query: fake_results)
     # Returns 200 when not busy
     resp = client.post("/update_analysis")
     assert resp.status_code == 200

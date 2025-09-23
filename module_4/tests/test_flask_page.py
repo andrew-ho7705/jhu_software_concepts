@@ -10,17 +10,37 @@ from flask import Flask
 ])
 
 @pytest.mark.web
-def test_page_load(page_name, expected_result, method, client):
-    # Test app factory / Config: Assert a testable Flask app is created with required routes (e.g. should test each of your “/routes” that you establish in flask)
-    # assert app is not None
-    # assert type(app) == type(Flask(__name__))
+def test_page_load(page_name, expected_result, method, client, monkeypatch):
+    # Mock data for q9, q10
+    def fake_execute(query, multi_row=False):
+        if "GROUP BY degree" in query:
+            return [("Masters", 45.67), ("PhD", 30.12)]
+        if "GROUP BY llm_generated_university" in query: 
+            return [("JHU", 25.0), ("Georgetown", 33.33)]
+        return 1
+
+    monkeypatch.setattr("module_4.src.app.pages.execute_query", fake_execute)
+
+    if method == "GET":
+        response = client.get(page_name)
+    else:
+        response = client.post(page_name)
+
+    assert response.status_code == expected_result
+
+    html = response.data.decode()
+
+    if page_name == "/":
+        assert "Pull Data" in html
+        assert "Update Analysis" in html
+        assert "Analysis" in html
+        assert "Answer:" in html
     # Test GET /analysis (page load)
     if method == "GET":
         response = client.get(page_name)
     if method == "POST":
         response = client.post(page_name)
 
-    
     assert response.status_code == expected_result
 
     html = response.data.decode()

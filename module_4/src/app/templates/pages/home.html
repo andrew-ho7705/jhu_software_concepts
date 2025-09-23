@@ -17,7 +17,7 @@
   <p>Answer: Total Applicants: {{ q1 }}</p>
 
   <h2>2. What percentage of entries are from international students (not American or Other)?</h2>
-  <p>Answer: {{ q2 }}%</p>
+  <p>Answer: {{ "%.2f"|format(q2) }}%</p>
 
   <h2>3. What is the average GPA, GRE, GRE V, GRE AW of applicants who provide these metrics?</h2>
   <ul>
@@ -31,7 +31,7 @@
   <p>Answer: {{ "%.2f"|format(q4) }}</p>
 
   <h2>5. What percent of entries for Fall 2025 are Acceptances?</h2>
-  <p>Answer: {{ q5 }}%</p>
+  <p>Answer: {{ "%.2f"|format(q5) }}%</p>
 
   <h2>6. What is the average GPA of applicants who applied for Fall 2025 who are Acceptances?</h2>
   <p>Answer: {{ "%.2f"|format(q6) }}</p>
