@@ -39,7 +39,7 @@ def execute_query(query, multi_row=False):
     return results
 
 
-def query_data(execute_query):
+def query_data(execute_query, table="applicants"):
     """
     Run predefined analysis queries on the applicants table.
 
@@ -52,36 +52,36 @@ def query_data(execute_query):
 
     # Query 1
     q1 = execute_query(
-        """
+        f"""
         SELECT COUNT(*) 
-        FROM applicants 
+        FROM {table} 
         WHERE term LIKE '%Fall 2025%'
         """)
 
     # Query 2
     q2 = execute_query( 
-        """
+        f"""
         SELECT CAST(
             (COUNT(CASE WHEN us_or_international = 'International' THEN 1 END) * 100.0 / COUNT(*)) AS DECIMAL(4,2)
         )
-        FROM applicants
+        FROM {table}
         """)
 
     # Query 3a–3d
     q3a = execute_query(
-        "SELECT AVG(gpa) FROM applicants WHERE gpa IS NOT NULL")
+        f"SELECT AVG(gpa) FROM {table} WHERE gpa IS NOT NULL")
     q3b = execute_query(
-        "SELECT AVG(gre) FROM applicants WHERE gre IS NOT NULL")
+        f"SELECT AVG(gre) FROM {table} WHERE gre IS NOT NULL")
     q3c = execute_query(
-        "SELECT AVG(gre_v) FROM applicants WHERE gre_v IS NOT NULL")
+        f"SELECT AVG(gre_v) FROM {table} WHERE gre_v IS NOT NULL")
     q3d = execute_query(
-        "SELECT AVG(gre_aw) FROM applicants WHERE gre_aw IS NOT NULL")
+        f"SELECT AVG(gre_aw) FROM {table} WHERE gre_aw IS NOT NULL")
 
     # Query 4
     q4 = execute_query(
-        """
+        f"""
         SELECT AVG(gpa) 
-        FROM applicants 
+        FROM {table} 
         WHERE us_or_international = 'American' 
         AND term LIKE '%Fall 2025%' 
         AND gpa IS NOT NULL
@@ -89,19 +89,19 @@ def query_data(execute_query):
 
     # Query 5
     q5 = execute_query(
-        """
+        f"""
         SELECT CAST(
-            (COUNT(CASE WHEN status LIKE '%Accepted%' THEN 1 END) * 100.0 / COUNT(*)) AS DECIMAL(5,2)
+            (COUNT(CASE WHEN status LIKE '%Accepted%' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)) AS DECIMAL(5,2)
         )
-        FROM applicants 
+        FROM {table} 
         WHERE term LIKE '%Fall 2025%'
         """)
 
     # Query 6
     q6 = execute_query(
-        """
+        f"""
         SELECT AVG(gpa) 
-        FROM applicants 
+        FROM {table} 
         WHERE term LIKE '%Fall 2025%' 
         AND status LIKE '%Accepted%' 
         AND gpa IS NOT NULL
@@ -109,18 +109,18 @@ def query_data(execute_query):
 
     # Query 7
     q7 = execute_query(
-        """
+        f"""
         SELECT COUNT(*) 
-        FROM applicants 
+        FROM {table} 
         WHERE llm_generated_program LIKE '%Computer Science' 
         AND llm_generated_university LIKE '%Johns Hopkins%'
         """)
 
     # Query 8
     q8 = execute_query(
-        """
+        f"""
         SELECT COUNT(*) 
-        FROM applicants 
+        FROM {table} 
         WHERE date_added >= '2025-01-01' 
         AND date_added < '2026-01-01' 
         AND status LIKE '%Accepted%' 
@@ -130,13 +130,13 @@ def query_data(execute_query):
 
     # Query 9
     q9 = execute_query(
-        """
+        f"""
         SELECT 
             degree,
             CAST(
                 (COUNT(CASE WHEN status LIKE '%Accepted%' THEN 1 END) * 100.0 / COUNT(*)) AS double precision
             ) as acceptance_rate
-        FROM applicants 
+        FROM {table} 
         WHERE degree IS NOT NULL
         GROUP BY degree 
         ORDER BY acceptance_rate ASC
@@ -145,13 +145,13 @@ def query_data(execute_query):
 
     # Query 10
     q10 = execute_query(
-        """
+        f"""
         SELECT 
             llm_generated_university,
             CAST(
                 (COUNT(CASE WHEN status LIKE '%Accepted%' THEN 1 END) * 100.0 / COUNT(*)) AS float
             ) as acceptance_rate
-        FROM applicants 
+        FROM {table} 
         WHERE llm_generated_university IS NOT NULL 
         GROUP BY llm_generated_university 
         HAVING COUNT(*) >= 25

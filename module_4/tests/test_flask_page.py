@@ -17,7 +17,7 @@ def test_page_load(page_name, expected_result, method, client, monkeypatch):
             return [("Masters", 45.67), ("PhD", 30.12)]
         if "GROUP BY llm_generated_university" in query: 
             return [("JHU", 25.0), ("Georgetown", 33.33)]
-        return 1
+        return 1.23
 
     monkeypatch.setattr("module_4.src.app.pages.execute_query", fake_execute)
 
