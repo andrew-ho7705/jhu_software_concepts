@@ -13,6 +13,35 @@ def app():
 def client(app):
     return app.test_client()
 
+@pytest.fixture(scope="function")
+def setup_test_table(connect_to_db):
+    conn, cur = connect_to_db
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS test (
+            program TEXT,
+            comments TEXT,
+            date_added DATE,
+            url TEXT PRIMARY KEY,
+            status TEXT,
+            term TEXT,
+            us_or_international TEXT,
+            gpa FLOAT,
+            gre FLOAT,
+            gre_v FLOAT,
+            gre_aw FLOAT,
+            degree TEXT,
+            llm_generated_program TEXT,
+            llm_generated_university TEXT
+        );
+    """)
+    conn.commit()
+
+    yield cur  # let the test run
+
+    cur.execute("DROP TABLE test;")
+    conn.commit()
+
 @pytest.fixture
 def example_applicant_data():
     return [

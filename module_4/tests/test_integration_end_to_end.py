@@ -6,7 +6,7 @@ from module_4.src.app.pages import pull_data
 
 
 @pytest.mark.integration
-def test_end_to_end_flow(client, mock_llm, connect_to_db, example_applicant_data, monkeypatch):
+def test_end_to_end_flow(client, mock_llm, connect_to_db, example_applicant_data, setup_test_table, monkeypatch):
     _, cur = connect_to_db
 
     monkeypatch.setattr(clean_module, "clean_data", lambda data: example_applicant_data)
