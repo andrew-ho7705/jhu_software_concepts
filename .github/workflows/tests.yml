@@ -82,4 +82,4 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
       run: |
         echo "Running tests..."
-        pytest -v -s --tb=long || true  # Don't fail on test errors initially
+        pytest -q --cov=module_4/src --cov-report=term-missing --cov-fail-under=100
