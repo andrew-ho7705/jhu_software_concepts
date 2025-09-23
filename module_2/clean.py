@@ -4,12 +4,32 @@ from .scrape import scrape_survey_page, scrape_raw_data
 
 # Remove fields from the dataset according to the example in the pdf
 def _remove_falsy_keys(entry):
+    """
+    Remove keys with falsy values except 'comments'.
+
+    Args:
+        entry: Single applicant record.
+
+    Returns:
+        dict: Cleaned record with only truthy values and 'comments'.
+    """
+
     return {
         k: v for k, v in entry.items() if k in "comments" or v not in ("0", "0.00", "")
     }
 
 
 def clean_data(raw_data):
+    """
+    Clean raw applicant data by combining university with program and removing falsy fields.
+
+    Args:
+        raw_data: List of raw applicant records.
+
+    Returns:
+        list: Cleaned applicant records.
+    """
+
     cleaned_list = []
     for entry in raw_data:
         # Append university to program
@@ -25,11 +45,32 @@ def clean_data(raw_data):
 
 
 def load_data(path):
+    """
+    Load JSON data from a file.
+
+    Args:
+        path: File path to JSON data.
+
+    Returns:
+        list: Parsed JSON data.
+    """
+
     with open(path, "r", encoding="utf-16") as f:
         return json.load(f)
 
 
 def save_data(data, path):
+    """
+    Save data to a JSON file.
+
+    Args:
+        data : Data to save.
+        path : File path for output.
+    
+    Returns:
+        Nothing.
+    """
+
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 

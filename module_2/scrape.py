@@ -4,45 +4,67 @@ import re
 
 
 def scrape_survey_page(pages):
-  http = urllib3.PoolManager()
-  base_survey_url = "https://www.thegradcafe.com/survey"
-  survey_page_data = {}
-  
-   # Grab more than enough ids in case some don't exist
-  for page_num in range(1, pages + 1):
-    url = f"{base_survey_url}?page={page_num}"
-    response = http.request('GET', url)
-    html = response.data.decode("utf-8")
-    soup = BeautifulSoup(html, "html.parser")
+    """
+    Scrape summary survey page data from The GradCafe.
 
-    for dt in soup.find_all("dt", class_="tw-relative tw-flex-none"):
-      a_tag = dt.find("a", href=re.compile(r"/result/\d{6}"))
-      if not a_tag:
-        continue
-      result_url = a_tag['href']
-      match_obj = re.search(r"/result/(\d{6})", result_url)
-      if not match_obj:
-        continue
-      result_id = int(match_obj.group(1))
+    Args:
+        pages: Number of survey pages to scrape.
 
-      parent = dt.find_parent("tr")
-      tds = parent.find_all("td")
-      added_on = tds[2].get_text(strip=True)
-      decision = tds[3].get_text(strip=True)
-      
-      next_tr = parent.find_next_sibling("tr")
-      term = None
-      if next_tr:
-        for div in next_tr.find_all("div"):
-          text = div.get_text(strip=True)
-          if text.lower().startswith("fall") or text.lower().startswith("spring"):
-              term = text
-              break
-      survey_page_data[result_id] = [added_on, decision, term]
-  
-  return survey_page_data
+    Returns:
+        Dictionary mapping result ID to a list of
+        [added_on, decision, term].
+    """
+    
+    http = urllib3.PoolManager()
+    base_survey_url = "https://www.thegradcafe.com/survey"
+    survey_page_data = {}
+    
+    # Grab more than enough ids in case some don't exist
+    for page_num in range(1, pages + 1):
+        url = f"{base_survey_url}?page={page_num}"
+        response = http.request('GET', url)
+        html = response.data.decode("utf-8")
+        soup = BeautifulSoup(html, "html.parser")
+
+        for dt in soup.find_all("dt", class_="tw-relative tw-flex-none"):
+            a_tag = dt.find("a", href=re.compile(r"/result/\d{6}"))
+            if not a_tag:
+                continue
+        result_url = a_tag['href']
+        match_obj = re.search(r"/result/(\d{6})", result_url)
+        if not match_obj:
+            continue
+        result_id = int(match_obj.group(1))
+
+        parent = dt.find_parent("tr")
+        tds = parent.find_all("td")
+        added_on = tds[2].get_text(strip=True)
+        decision = tds[3].get_text(strip=True)
+        
+        next_tr = parent.find_next_sibling("tr")
+        term = None
+        if next_tr:
+            for div in next_tr.find_all("div"):
+                text = div.get_text(strip=True)
+                if text.lower().startswith("fall") or text.lower().startswith("spring"):
+                    term = text
+                    break
+        survey_page_data[result_id] = [added_on, decision, term]
+    
+    return survey_page_data
 
 def scrape_raw_data(survey_page_data):
+    """
+    Scrape individual survey result pages for detailed applicant data.
+
+    Args:
+        survey_page_data: Output of `scrape_survey_page`.
+
+    Returns:
+        list[dict[str, str]]: List of applicant records, each as a dictionary
+            with keys like "program", "university", "comments", "GPA", "GRE", etc.
+    """
+    
     http = urllib3.PoolManager()
     base_url = "https://www.thegradcafe.com/survey/result/"
     raw_data = []

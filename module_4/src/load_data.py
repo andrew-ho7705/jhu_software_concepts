@@ -9,7 +9,16 @@ from module_2.clean import load_data
 
 
 def handle_score(score):
-    """Helper function to safely convert numeric fields to float or None."""
+    """
+    Convert a numeric string to float or return None if invalid/falsy.
+
+    Args:
+        score: Score value.
+
+    Returns:
+        float | None: Parsed numeric value or None.
+    """
+    
     if (
         score is None
         or score in ("N/A", "")
@@ -25,6 +34,16 @@ def handle_score(score):
 
 
 def parse_date(date_string):
+    """
+    Parse date string in format 'Added on Month DD, YYYY'.
+
+    Args:
+        date_string: Date string.
+
+    Returns:
+        datetime.date | None: Parsed date or None if invalid.
+    """
+
     # Only for the date_added field
     if not date_string or date_string == "":
         return None
@@ -59,6 +78,16 @@ def parse_date(date_string):
 
 
 def load_to_database(table):
+    """
+    Load applicant data from JSON into PostgreSQL.
+
+    Args:
+        table: Target database table name.
+    
+    Returns:
+        Nothing
+    """
+
     conn = psycopg2.connect(dbname="postgres", user="postgres")
     data = load_data("../module_2/llm_extend_applicant_data.json")
 

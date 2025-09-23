@@ -2,6 +2,13 @@ import psycopg2
 
 
 def connect_to_db():
+    """
+    Connect to PostgreSQL database.
+
+    Returns:
+        psycopg2.connection: Database connection object.
+    """
+
     return psycopg2.connect(
         dbname="postgres",
         user="postgres",
@@ -11,6 +18,17 @@ def connect_to_db():
 
 
 def execute_query(query, multi_row=False):
+    """
+    Execute SQL query and return results.
+
+    Args:
+        query: SQL query to execute.
+        multi_row: If True, fetch all rows; otherwise fetch one value.
+
+    Returns:
+        Query result: single value or list of rows.
+    """
+
     conn = connect_to_db()
     cursor = conn.cursor()
     results = None
@@ -26,6 +44,16 @@ def execute_query(query, multi_row=False):
 
 
 def query_data(execute_query):
+    """
+    Run predefined analysis queries on the applicants table.
+
+    Args:
+        execute_query: Function to execute SQL queries.
+
+    Returns:
+        dict: Results of all queries (q1-q10).
+    """
+
     # Query 1
     q1 = execute_query(
         """

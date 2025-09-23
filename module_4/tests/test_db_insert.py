@@ -1,5 +1,4 @@
 import datetime
-from sqlite3 import dbapi2
 import pytest
 from module_4.src.app.pages import pull_data
 from module_4.src import load_data

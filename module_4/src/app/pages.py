@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, jsonify
-from ..query_data import execute_query, connect_to_db, query_data
+from module_4.src.query_data import execute_query, connect_to_db, query_data
 from module_2 import scrape, clean
-from ..load_data import parse_date, handle_score
+from module_4.src.load_data import parse_date, handle_score
 import requests
 
 bp = Blueprint("pages", __name__)
@@ -9,11 +9,28 @@ scrape_running = False
 
 @bp.route("/")
 def home():
+    """
+    Homepage route: display analysis results.
+
+    Returns:
+        str: Rendered HTML template with query results.
+    """
+
     results = query_data(execute_query)
     return render_template("pages/home.html", **results)
 
 @bp.route('/pull_data', methods=['POST'])
 def pull_data(table_name="applicants"):
+    """
+    Scrape and update applicants table with new entries.
+
+    Args:
+        table_name: Database table to insert new entries.
+
+    Returns:
+        Response: JSON message.
+    """
+
     global scrape_running
     if scrape_running:
         return jsonify({"error": "Busy"}), 409
