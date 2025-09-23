@@ -55,9 +55,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Debug - Check database connectivity
+      run: |
+        sudo apt-get install -y postgresql-client
+        pg_isready -h localhost -p 5432 -U postgres
+      env:
+        PGPASSWORD: postgres
+      
+
     - name: Run tests
       env:
-        DATABASE_URL: postgresql://postgres@localhost:5432/postgres
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
         PYTHONPATH: ${{ github.workspace }}
       run: |
         echo "Running tests..."
