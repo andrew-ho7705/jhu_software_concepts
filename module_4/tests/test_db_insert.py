@@ -72,6 +72,7 @@ def test_simple_query(client, connect_to_db, example_applicant_data, monkeypatch
         assert entry[6]  # llm_generated_program
         assert entry[7]  # llm_generated_university
 
+@pytest.mark.db
 def test_load_to_database(connect_to_db, example_applicant_data, monkeypatch):
     conn, cur = connect_to_db
 

@@ -1,0 +1,18 @@
+(venv) PS D:\Academic and Professional\JHU\jhu_software_concepts\module_4> pytest -m "web or buttons or analysis or db or integration"
+>> 
+...............                                                                [100%]
+================================== tests coverage ===================================
+__________________ coverage: platform win32, python 3.13.1-final-0 __________________
+
+Name                  Stmts   Miss  Cover   Missing
+---------------------------------------------------
+src\__init__.py           0      0   100%
+src\app\__init__.py       0      0   100%
+src\app\app.py            4      0   100%
+src\app\pages.py         73      0   100%
+src\load_data.py         35      0   100%
+src\query_data.py        30      0   100%
+---------------------------------------------------
+TOTAL                   142      0   100%
+Required test coverage of 100% reached. Total coverage: 100.00%
+15 passed in 45.80s

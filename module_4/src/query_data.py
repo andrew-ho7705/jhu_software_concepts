@@ -27,7 +27,7 @@ def execute_query(query, multi_row=False):
 
 def query_data(execute_query):
     # Query 1
-    q1 = execute_query("Fall 2025 Applicants",
+    q1 = execute_query(
         """
         SELECT COUNT(*) 
         FROM applicants 
@@ -35,7 +35,7 @@ def query_data(execute_query):
         """)
 
     # Query 2
-    q2 = execute_query("Percentage of international students", 
+    q2 = execute_query( 
         """
         SELECT CAST(
             (COUNT(CASE WHEN us_or_international = 'International' THEN 1 END) * 100.0 / COUNT(*)) AS DECIMAL(4,2)
@@ -44,17 +44,17 @@ def query_data(execute_query):
         """)
 
     # Query 3a–3d
-    q3a = execute_query("Average GPA",
+    q3a = execute_query(
         "SELECT AVG(gpa) FROM applicants WHERE gpa IS NOT NULL")
-    q3b = execute_query("Average GRE",
+    q3b = execute_query(
         "SELECT AVG(gre) FROM applicants WHERE gre IS NOT NULL")
-    q3c = execute_query("Average GRE V",
+    q3c = execute_query(
         "SELECT AVG(gre_v) FROM applicants WHERE gre_v IS NOT NULL")
-    q3d = execute_query("Average GRE AW",
+    q3d = execute_query(
         "SELECT AVG(gre_aw) FROM applicants WHERE gre_aw IS NOT NULL")
 
     # Query 4
-    q4 = execute_query("Average GPA of American students in Fall 2025",
+    q4 = execute_query(
         """
         SELECT AVG(gpa) 
         FROM applicants 
@@ -64,7 +64,7 @@ def query_data(execute_query):
         """)
 
     # Query 5
-    q5 = execute_query("Percentage of Fall 2025 acceptances",
+    q5 = execute_query(
         """
         SELECT CAST(
             (COUNT(CASE WHEN status LIKE '%Accepted%' THEN 1 END) * 100.0 / COUNT(*)) AS DECIMAL(5,2)
@@ -74,7 +74,7 @@ def query_data(execute_query):
         """)
 
     # Query 6
-    q6 = execute_query("Average GPA of Fall 2025 acceptances",
+    q6 = execute_query(
         """
         SELECT AVG(gpa) 
         FROM applicants 
@@ -84,7 +84,7 @@ def query_data(execute_query):
         """)
 
     # Query 7
-    q7 = execute_query("JHU Computer Science applications",
+    q7 = execute_query(
         """
         SELECT COUNT(*) 
         FROM applicants 
@@ -93,7 +93,7 @@ def query_data(execute_query):
         """)
 
     # Query 8
-    q8 = execute_query("2025 Georgetown CS acceptances",
+    q8 = execute_query(
         """
         SELECT COUNT(*) 
         FROM applicants 
@@ -105,7 +105,7 @@ def query_data(execute_query):
         """)
 
     # Query 9
-    q9 = execute_query("Acceptance rate by degree level",
+    q9 = execute_query(
         """
         SELECT 
             degree,
@@ -120,7 +120,7 @@ def query_data(execute_query):
         multi_row=True)
 
     # Query 10
-    q10 = execute_query("Top 10 universities by acceptance rate",
+    q10 = execute_query(
         """
         SELECT 
             llm_generated_university,
@@ -148,7 +148,3 @@ def query_data(execute_query):
         "q9": q9,
         "q10": q10
     }
-
-
-if __name__ == "__main__":
-    data = query_data(execute_query)

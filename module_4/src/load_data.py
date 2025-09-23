@@ -91,7 +91,3 @@ def load_to_database(table):
             )
     conn.commit()
     conn.close()
-
-
-if __name__ == "__main__":
-    load_to_database()
