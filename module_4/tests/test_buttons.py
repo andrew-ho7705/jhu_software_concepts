@@ -1,7 +1,7 @@
 import pytest
 
 @pytest.mark.buttons
-def test_pull_data_success(client, monkeypatch, example_applicant_data):
+def test_pull_data_success(client, mock_llm, monkeypatch, example_applicant_data):
     # Test POST /pull-data (or whatever you named the path posting the pull data request)
     def fake_loader():
         return example_applicant_data
@@ -17,7 +17,7 @@ def test_pull_data_success(client, monkeypatch, example_applicant_data):
     assert b"Success" in resp.data
 
 @pytest.mark.buttons
-def test_update_analysis_success(client):
+def test_update_analysis_success(client, mock_llm):
     # Test POST /update-analysis (or whatever you named the path posting the update analysis request)
     # Returns 200 when not busy
     resp = client.post("/update_analysis")
@@ -25,7 +25,7 @@ def test_update_analysis_success(client):
     assert b"Success" in resp.data
 
 @pytest.mark.buttons
-def test_busy_gating(client, monkeypatch):
+def test_busy_gating(client, mock_llm, monkeypatch):
     # Test busy gating
     monkeypatch.setattr("module_4.src.app.pages.scrape_running", True)
 

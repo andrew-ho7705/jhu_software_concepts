@@ -6,7 +6,7 @@ from module_4.src.app.pages import pull_data
 
 
 @pytest.mark.integration
-def test_end_to_end_flow(client, connect_to_db, example_applicant_data, monkeypatch):
+def test_end_to_end_flow(client, mock_llm, connect_to_db, example_applicant_data, monkeypatch):
     _, cur = connect_to_db
 
     monkeypatch.setattr(clean_module, "clean_data", lambda data: example_applicant_data)
@@ -36,7 +36,7 @@ def test_end_to_end_flow(client, connect_to_db, example_applicant_data, monkeypa
 
 
 @pytest.mark.integration
-def test_multiple_pulls_consistent(client, connect_to_db, example_duplicate_applicant_data, monkeypatch):
+def test_multiple_pulls_consistent(client, mock_llm, connect_to_db, example_duplicate_applicant_data, monkeypatch):
     _, cur = connect_to_db
 
     monkeypatch.setattr(clean_module, "clean_data", lambda data: example_duplicate_applicant_data)

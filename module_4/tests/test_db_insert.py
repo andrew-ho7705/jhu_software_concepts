@@ -5,7 +5,7 @@ from module_4.src import load_data
 import module_2.clean as clean_module
 
 @pytest.mark.db
-def test_insert_on_pull(client, connect_to_db, example_applicant_data, monkeypatch):
+def test_insert_on_pull(client, mock_llm, connect_to_db, example_applicant_data, monkeypatch):
     # Test insert on pull
     _, cur = connect_to_db
 
@@ -32,7 +32,7 @@ def test_insert_on_pull(client, connect_to_db, example_applicant_data, monkeypat
         assert llm_uni      
 
 @pytest.mark.db
-def test_idempotency(client, connect_to_db, example_duplicate_applicant_data, monkeypatch):
+def test_idempotency(client, mock_llm, connect_to_db, example_duplicate_applicant_data, monkeypatch):
     # Test idempotency / constraints
     _, cur = connect_to_db
 
@@ -48,7 +48,7 @@ def test_idempotency(client, connect_to_db, example_duplicate_applicant_data, mo
     assert count_after_insert == 1
 
 @pytest.mark.db
-def test_simple_query(client, connect_to_db, example_applicant_data, monkeypatch):
+def test_simple_query(client, mock_llm, connect_to_db, example_applicant_data, monkeypatch):
     # Test simple query function
     _, cur = connect_to_db
 
@@ -72,7 +72,7 @@ def test_simple_query(client, connect_to_db, example_applicant_data, monkeypatch
         assert entry[7]  # llm_generated_university
 
 @pytest.mark.db
-def test_load_to_database(connect_to_db, example_applicant_data, monkeypatch):
+def test_load_to_database(connect_to_db, mock_llm, example_applicant_data, monkeypatch):
     conn, cur = connect_to_db
 
     monkeypatch.setattr(load_data, "load_data", lambda _: example_applicant_data)

@@ -108,3 +108,34 @@ def connect_to_db():
     conn.commit()
     cur.close()
     conn.close()
+
+class FakeLLMResponse:
+    def __init__(self, json_data=None):
+        self._json_data = json_data or []
+
+    def json(self):
+        # Mimic the structure your pull_data function expects
+        return {
+            "rows": [
+                {
+                    "llm-generated-program": entry.get("program", "Mock Program"),
+                    "llm-generated-university": "Mock University"
+                }
+                for entry in self._json_data
+            ]
+        }
+
+    def raise_for_status(self):
+        pass
+
+
+@pytest.fixture
+def mock_llm(monkeypatch):
+    """
+    Patch requests.post to return a fake LLM response.
+    """
+    import module_4.src.app.pages as pages
+    def fake_post(url, json=None, timeout=None):
+        return FakeLLMResponse(json)
+    monkeypatch.setattr(pages.requests, "post", fake_post)
+    return fake_post
