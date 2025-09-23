@@ -17,3 +17,4 @@ architecture, API reference, and testing.
    architecture
    api
    testing
+   operational_notes
