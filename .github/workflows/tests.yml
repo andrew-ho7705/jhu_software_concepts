@@ -60,4 +60,4 @@ jobs:
         PYTHONPATH: ${{ github.workspace }}
       run: |
         echo "Running tests..."
-        pytest -q --cov=module_4/src --cov-report=term-missing --cov-fail-under=100
+        pytest -v --cov=module_4/src --cov-report=term-missing --cov-fail-under=100
