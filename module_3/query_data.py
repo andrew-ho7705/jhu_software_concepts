@@ -1,13 +1,9 @@
-import psycopg2
+import psycopg
+import os
 
 
 def connect_to_db():
-    return psycopg2.connect(
-        dbname="postgres",
-        user="postgres",
-        host="localhost",
-        port=5432
-    )
+    return psycopg.connect(os.environ.get("DATABASE_URL"))
 
 
 def execute_query(description, query, multi_row=False):

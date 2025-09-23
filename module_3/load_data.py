@@ -1,4 +1,4 @@
-import psycopg2
+import psycopg
 import sys
 import os
 import re
@@ -63,7 +63,7 @@ def parse_date(date_string):
 
 
 def load_to_database():
-    conn = psycopg2.connect(dbname="postgres", user="postgres")
+    conn = psycopg.connect(os.environ.get("DATABASE_URL"))
     data = load_data("../module_2/llm_extend_applicant_data.json")
 
     try:

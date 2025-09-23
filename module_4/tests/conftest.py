@@ -1,5 +1,6 @@
 import pytest
-import psycopg2
+import psycopg
+import os
 from module_4.src.app.app import app as flask_app
 
 @pytest.fixture
@@ -79,12 +80,7 @@ def example_duplicate_applicant_data():
 
 @pytest.fixture
 def connect_to_db():
-    conn = psycopg2.connect(
-        dbname="postgres",
-        user="postgres",
-        host="localhost",
-        port=5432
-    )
+    conn = psycopg.connect(os.environ.get("DATABASE_URL"))
     cur = conn.cursor()
     cur.execute("""
                 CREATE TABLE test (
