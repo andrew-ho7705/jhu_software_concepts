@@ -1,0 +1,215 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testing Guide &mdash; Module 4 Docs  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="API Reference" href="api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Module 4 Docs
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview &amp; Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Testing Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#fixtures">Fixtures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#marked-tests">Marked Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#selectors">Selectors</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Module 4 Docs</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Testing Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/testing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="testing-guide">
+<h1>Testing Guide<a class="headerlink" href="#testing-guide" title="Link to this heading"></a></h1>
+<p>This guide describes the testing utilities, fixtures, markers, and selectors used for this project.</p>
+<section id="fixtures">
+<h2>Fixtures<a class="headerlink" href="#fixtures" title="Link to this heading"></a></h2>
+<p>The following pytest fixtures are provided to facilitate testing of the Flask app, ETL, and database layers.</p>
+<p><strong>Flask App &amp; Client</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">app</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides a Flask app instance configured for testing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">flask_app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;TESTING&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">flask_app</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">client</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides a test client for the Flask app.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">app</span><span class="o">.</span><span class="n">test_client</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Mock Applicant Data</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">example_applicant_data</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a list of sample applicant dictionaries for testing ETL and database insertion.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># three different applicant records</span>
+    <span class="o">...</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">example_duplicate_applicant_data</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns two identical applicant records to test idempotency logic.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p><strong>Database Fixture</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">connect_to_db</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides a connection and cursor to a test PostgreSQL database.</span>
+<span class="sd">    Creates a temporary &#39;test&#39; table before the test and drops it after.</span>
+<span class="sd">    Uses the DATABASE_URL environment variable for connection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">psycopg2</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DATABASE_URL&quot;</span><span class="p">))</span>
+    <span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        CREATE TABLE test (</span>
+<span class="s2">            p_id int GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,</span>
+<span class="s2">            program TEXT,</span>
+<span class="s2">            comments TEXT,</span>
+<span class="s2">            date_added DATE,</span>
+<span class="s2">            url TEXT UNIQUE,</span>
+<span class="s2">            status TEXT,</span>
+<span class="s2">            term TEXT,</span>
+<span class="s2">            us_or_international TEXT,</span>
+<span class="s2">            gpa FLOAT,</span>
+<span class="s2">            gre FLOAT,</span>
+<span class="s2">            gre_v FLOAT,</span>
+<span class="s2">            gre_aw FLOAT,</span>
+<span class="s2">            degree TEXT,</span>
+<span class="s2">            llm_generated_program TEXT,</span>
+<span class="s2">            llm_generated_university TEXT</span>
+<span class="s2">        );</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">yield</span> <span class="n">conn</span><span class="p">,</span> <span class="n">cur</span>
+    <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;DROP TABLE IF EXISTS test&quot;</span><span class="p">)</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="n">cur</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="marked-tests">
+<h2>Marked Tests<a class="headerlink" href="#marked-tests" title="Link to this heading"></a></h2>
+<p>The project uses custom pytest markers to organize tests:</p>
+<ul class="simple">
+<li><p><strong>&#64;pytest.mark.web</strong> : marks tests that require the Flask web client.</p></li>
+<li><p><strong>&#64;pytest.mark.buttons</strong> : marks tests that interact with the two buttons on the app.</p></li>
+<li><p><strong>&#64;pytest.mark.analysis</strong> : marks tests that call functions that format data diaplyed.</p></li>
+<li><p><strong>&#64;pytest.mark.db</strong> : marks tests that require database access.</p></li>
+<li><p><strong>&#64;pytest.mark.web</strong> : marks tests that test end-to-end functionality.</p></li>
+</ul>
+</section>
+<section id="selectors">
+<h2>Selectors<a class="headerlink" href="#selectors" title="Link to this heading"></a></h2>
+<p>Certain tests rely on expected HTML content or elements (“selectors”) to validate the rendered page.</p>
+<p>Common selectors:</p>
+<ul class="simple">
+<li><p><strong>“Pull Data”</strong> button on the home page</p></li>
+<li><p><strong>“Update Analysis”</strong> button on the home page</p></li>
+<li><p>Presence of <strong>“Analysis”</strong> text</p></li>
+<li><p>Presence of at least one <strong>“Answer:”</strong> text</p></li>
+<li><p>Columns in database table: program, comments, date_added, url, status, term, llm_generated_program, llm_generated_university</p></li>
+</ul>
+<p>Tests validate that these elements exist in the HTML response or the database after actions like <cite>/pull_data</cite> or <cite>/update_analysis</cite>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="api.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Andrew Ho.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
