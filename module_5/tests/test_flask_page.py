@@ -18,8 +18,9 @@ def test_page_load(page_name, expected_result, method, client, monkeypatch):
     """
     Test for basic functionality and HTML elements on analysis page
     """
+
     # Mock data for q9, q10
-    def fake_execute(query, _multi_row=False):
+    def fake_execute(query, multi_row=False):
         if "GROUP BY degree" in query:
             return [("Masters", 45.67), ("PhD", 30.12)]
         if "GROUP BY llm_generated_university" in query:

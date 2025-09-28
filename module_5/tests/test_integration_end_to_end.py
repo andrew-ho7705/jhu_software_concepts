@@ -10,7 +10,7 @@ from module_4.src.query_data import query_data
 
 @pytest.mark.integration
 def test_end_to_end_flow(
-    client, connect_to_db, example_applicant_data, monkeypatch
+    client, mock_llm, connect_to_db, example_applicant_data, monkeypatch
 ):
     """
     Test complete end-to-end workflow from scraping to display
@@ -47,7 +47,7 @@ def test_end_to_end_flow(
 
 @pytest.mark.integration
 def test_multiple_pulls_consistent(
-    client, connect_to_db, example_duplicate_applicant_data, monkeypatch
+    client, mock_llm, connect_to_db, example_duplicate_applicant_data, monkeypatch
 ):
     """
     Test consistency across multiple data pulls

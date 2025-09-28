@@ -6,7 +6,7 @@ import pytest
 
 
 @pytest.mark.buttons
-def test_pull_data_success(client, monkeypatch, example_applicant_data):
+def test_pull_data_success(client, mock_llm, monkeypatch, example_applicant_data):
     """
     Test successful data pulling functionality
     """
@@ -33,7 +33,7 @@ def test_pull_data_success(client, monkeypatch, example_applicant_data):
 
 
 @pytest.mark.buttons
-def test_update_analysis_success(client, fake_results, monkeypatch):
+def test_update_analysis_success(client, mock_llm, fake_results, monkeypatch):
     """
     Test successful analysis update functionality
     """
@@ -49,7 +49,7 @@ def test_update_analysis_success(client, fake_results, monkeypatch):
 
 
 @pytest.mark.buttons
-def test_busy_gating(client, monkeypatch):
+def test_busy_gating(client, mock_llm, monkeypatch):
     """
     Test busy gating functionality to prevent concurrent operations
     """

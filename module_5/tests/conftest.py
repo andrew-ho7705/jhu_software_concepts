@@ -9,8 +9,8 @@ import requests
 from module_5.src.app.app import app as flask_app
 
 
-@pytest.fixture(name="app_fixture")
-def app():
+@pytest.fixture
+def app():  # pylint: disable=redefined-outer-name
     """
     Fixture for test app
     """
@@ -19,11 +19,11 @@ def app():
 
 
 @pytest.fixture
-def client(app_fixture):
+def client(app):
     """
     Create a test client for the Flask application
     """
-    return app_fixture.test_client()
+    return app.test_client()
 
 
 @pytest.fixture

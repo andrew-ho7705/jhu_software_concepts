@@ -11,7 +11,7 @@ import module_2.clean as clean_module
 
 @pytest.mark.db
 def test_insert_on_pull(
-    client, connect_to_db, example_applicant_data, monkeypatch
+    client, mock_llm, connect_to_db, example_applicant_data, monkeypatch
 ):
     """
     Test database insertion during data pull operation
@@ -44,7 +44,7 @@ def test_insert_on_pull(
 
 @pytest.mark.db
 def test_idempotency(
-    client, connect_to_db, example_duplicate_applicant_data, monkeypatch
+    client, mock_llm, connect_to_db, example_duplicate_applicant_data, monkeypatch
 ):
     """
     Test idempotency and constraint handling for duplicate data
@@ -69,7 +69,7 @@ def test_idempotency(
 
 @pytest.mark.db
 def test_simple_query(
-    client, connect_to_db, example_applicant_data, monkeypatch
+    client, mock_llm, connect_to_db, example_applicant_data, monkeypatch
 ):
     """
     Test simple query functionality with database
@@ -112,10 +112,6 @@ def test_load_to_database(connect_to_db, mock_llm, example_applicant_data, monke
     _, cur = connect_to_db
 
     monkeypatch.setattr(load_data, "load_data", lambda _: example_applicant_data)
-    monkeypatch.setattr(
-        "module_5.src.app.pages._call_llm_service",
-        lambda llm_data, entry_mapping, new_entries: mock_llm(llm_data),
-    )
 
     load_data.load_to_database("test")
 

@@ -8,7 +8,6 @@ import re
 
 from module_2.clean import load_data
 import psycopg
-from psycopg import sql
 
 
 def handle_score(score):
@@ -95,53 +94,29 @@ def load_to_database(table):
         with conn.cursor() as cur:
             data = load_data("../module_2/llm_extend_applicant_data.json")
             for record in data:
-                insert_stmt = sql.SQL("""
-                INSERT INTO {table} (
-                    program, comments, date_added, url, status, term,
-                    us_or_international, gpa, gre, gre_v, gre_aw, degree,
-                    llm_generated_program, llm_generated_university
-                )
-                VALUES (
-                    {program}, {comments}, {date_added}, {url}, {status}, {term},
-                    {us_or_international}, {gpa}, {gre}, {gre_v}, {gre_aw}, {degree},
-                    {llm_generated_program}, {llm_generated_university}
-                )
-                LIMIT 1
-                """).format(
-                table=sql.Identifier(table),
-                program=sql.Placeholder("program"),
-                comments=sql.Placeholder("comments"),
-                date_added=sql.Placeholder("date_added"),
-                url=sql.Placeholder("url"),
-                status=sql.Placeholder("status"),
-                term=sql.Placeholder("term"),
-                us_or_international=sql.Placeholder("us_or_international"),
-                gpa=sql.Placeholder("gpa"),
-                gre=sql.Placeholder("gre"),
-                gre_v=sql.Placeholder("gre_v"),
-                gre_aw=sql.Placeholder("gre_aw"),
-                degree=sql.Placeholder("degree"),
-                llm_generated_program=sql.Placeholder("llm_generated_program"),
-                llm_generated_university=sql.Placeholder("llm_generated_university")
-            )
-
                 cur.execute(
-                    insert_stmt,
-                    {
-                        "program": record.get("program"),
-                        "comments": record.get("comments"),
-                        "date_added": parse_date(record.get("date_added")),
-                        "url": record.get("url"),
-                        "status": record.get("status"),
-                        "term": record.get("term"),
-                        "us_or_international": record.get("US/International"),
-                        "gpa": handle_score(record.get("GPA")),
-                        "gre": handle_score(record.get("GRE")),
-                        "gre_v": handle_score(record.get("GRE_V")),
-                        "gre_aw": handle_score(record.get("GRE_AW")),
-                        "degree": record.get("Degree"),
-                        "llm_generated_program": record.get("llm-generated-program"),
-                        "llm_generated_university": record.get("llm-generated-university"),
-                    }
+                    f"""
+                    INSERT INTO {table} (
+                        program, comments, date_added, url, status, term, 
+                        us_or_international, gpa, gre, gre_v, gre_aw, degree, 
+                        llm_generated_program, llm_generated_university) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                    (
+                        record.get("program"),
+                        record.get("comments"),
+                        parse_date(record.get("date_added")),
+                        record.get("url"),
+                        record.get("status"),
+                        record.get("term"),
+                        record.get("US/International"),
+                        handle_score(record.get("GPA")),
+                        handle_score(record.get("GRE")),
+                        handle_score(record.get("GRE_V")),
+                        handle_score(record.get("GRE_AW")),
+                        record.get("Degree"),
+                        record.get("llm-generated-program"),
+                        record.get("llm-generated-university"),
+                    ),
                 )
-                conn.commit()
+            conn.commit()

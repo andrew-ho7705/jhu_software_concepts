@@ -108,71 +108,65 @@ def pull_data(table_name="applicants"):
     Returns:
         Response: JSON message.
     """
+    if not scrape_lock.acquire(blocking=False):
+        return jsonify({"error": "Busy"}), 409
 
-    with scrape_lock:
-        try:
-            print("Scraping data...")
-            survey_data = scrape.scrape_survey_page(pages=1)
-            raw_data = scrape.scrape_raw_data(survey_data)
-            cleaned = clean.clean_data(raw_data)
-            print(f"Scraped {len(cleaned)} entries")
+    try:
+        print("Scraping data...")
+        survey_data = scrape.scrape_survey_page(pages=1)
+        raw_data = scrape.scrape_raw_data(survey_data)
+        cleaned = clean.clean_data(raw_data)
+        print(f"Scraped {len(cleaned)} entries")
 
-            # Check which entries already exist in database
+        # Check which entries already exist in database
+        with connect_to_db() as conn:
+            with conn.cursor() as cur:
+                urls = [entry["url"] for entry in cleaned]
+                if urls:
+                    placeholders = ",".join(["%s"] * len(urls))
+                    cur.execute(
+                        f"SELECT url FROM {table_name} WHERE url IN ({placeholders})",
+                        urls,
+                    )
+                    existing_urls = {row[0] for row in cur.fetchall()}
+
+                # Filter out existing entries
+                new_entries = [
+                    entry for entry in cleaned if entry["url"] not in existing_urls
+                ]
+                print(f"Found {len(new_entries)} new entries to process")
+
+        # Run new entries through LLM
+        if new_entries:
+            print(f"Processing {len(new_entries)} new entries through LLM...")
+            llm_data, entry_mapping = _process_llm_data(new_entries)
+            _call_llm_service(llm_data, entry_mapping, new_entries)
+
+        if new_entries:
+            insert_data = _prepare_insert_data(new_entries)
             with connect_to_db() as conn:
                 with conn.cursor() as cur:
-                    urls = [entry["url"] for entry in cleaned]
-                    if urls:
-                        query = sql.SQL("""
-                                SELECT url FROM {table} WHERE url IN ({placeholders})
-                                """).format(
-                            table=sql.Identifier(table_name),
-                            placeholders=sql.SQL(",").join(sql.Placeholder() * len(urls))
-                        )
-                        cur.execute(query, urls)
-                        existing_urls = {row[0] for row in cur.fetchall()}
+                    cur.executemany(
+                        f"""
+                        INSERT INTO {table_name} (
+                            program, comments, date_added, url, status, term, 
+                            us_or_international, gpa, gre, gre_v, gre_aw, degree, 
+                            llm_generated_program, llm_generated_university
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (url) DO NOTHING;
+                    """,
+                        insert_data,
+                    )
+                    conn.commit()
 
-                    # Filter out existing entries
-                    new_entries = [
-                        entry for entry in cleaned if entry["url"] not in existing_urls
-                    ]
-                    print(f"Found {len(new_entries)} new entries to process")
+        print(f"Scrape complete: {len(new_entries)} new entries added")
 
-            # Run new entries through LLM
-            if new_entries:
-                print(f"Processing {len(new_entries)} new entries through LLM...")
-                llm_data, entry_mapping = _process_llm_data(new_entries)
-                _call_llm_service(llm_data, entry_mapping, new_entries)
+    except (requests.RequestException, psycopg.Error, ValueError) as e:
+        print(f"Error in pull_data: {e}")
+    finally:
+        scrape_lock.release()
 
-            if new_entries:
-                insert_data = _prepare_insert_data(new_entries)
-                with connect_to_db() as conn:
-                    with conn.cursor() as cur:
-                        columns = [
-                            "program", "comments", "date_added", "url", "status", "term",
-                            "us_or_international", "gpa", "gre", "gre_v", "gre_aw", "degree",
-                            "llm_generated_program", "llm_generated_university"
-                        ]
-                        cur.executemany(
-                            sql.SQL("""
-                                INSERT INTO {table} ({fields})
-                                VALUES ({placeholders})
-                                ON CONFLICT (url) DO NOTHING
-                            """).format(
-                                table=sql.Identifier(table_name),
-                                fields=sql.SQL(",").join(map(sql.Identifier, columns)),
-                                placeholders=sql.SQL(",").join(sql.Placeholder() * len(columns))
-                            ), insert_data
-                        )
-                        conn.commit()
-
-            print(f"Scrape complete: {len(new_entries)} new entries added")
-
-        except (requests.RequestException, psycopg.Error, ValueError) as e:
-            print(f"Error in pull_data: {e}")
-            return jsonify({"error": "Busy"}), 409
-
-    # return jsonify({"message": "Success"}), 200
-    return redirect(url_for("pages.home"))
+    return jsonify({"message": "Success"}), 200
 
 
 @bp.route("/update_analysis", methods=["POST"])
@@ -183,13 +177,12 @@ def update_analysis():
     Returns:
         Response: JSON message.
     """
+    if not scrape_lock.acquire(blocking=False):
+        return jsonify({"error": "Busy"}), 409
 
-    with scrape_lock:
-        try:
-            query_data(execute_query)
-            print("Analysis updated successfully")
-            # return jsonify({"message": "Success"}), 200
-            return redirect(url_for("pages.home"))
-        except (requests.RequestException, psycopg.Error, ValueError) as e:
-            print(f"Error in pull_data: {e}")
-            return jsonify({"error": "Busy"}), 409
+    try:
+        query_data(execute_query)
+        print("Analysis updated successfully")
+        return jsonify({"message": "Success"}), 200
+    finally:
+        scrape_lock.release()

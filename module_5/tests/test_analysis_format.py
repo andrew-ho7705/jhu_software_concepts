@@ -1,7 +1,3 @@
-"""
-Test formatting functions and for consistency across the app
-"""
-
 import re
 import pytest
 
