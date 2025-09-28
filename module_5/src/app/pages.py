@@ -5,7 +5,8 @@ Flask routes module for TheGradCafe data analysis web interface.
 import threading
 import requests
 import psycopg
-from flask import Blueprint, render_template, jsonify
+from psycopg import sql
+from flask import Blueprint, render_template, jsonify, redirect, url_for
 from module_2 import scrape, clean
 from module_5.src.load_data import parse_date, handle_score
 from module_5.src.query_data import execute_query, connect_to_db, query_data
@@ -121,11 +122,13 @@ def pull_data(table_name="applicants"):
                 with conn.cursor() as cur:
                     urls = [entry["url"] for entry in cleaned]
                     if urls:
-                        placeholders = ",".join(["%s"] * len(urls))
-                        cur.execute(
-                            f"SELECT url FROM {table_name} WHERE url IN ({placeholders})",
-                            urls,
+                        query = sql.SQL("""
+                                SELECT url FROM {table} WHERE url IN ({placeholders})
+                                """).format(
+                            table=sql.Identifier(table_name),
+                            placeholders=sql.SQL(",").join(sql.Placeholder() * len(urls))
                         )
+                        cur.execute(query, urls)
                         existing_urls = {row[0] for row in cur.fetchall()}
 
                     # Filter out existing entries
@@ -144,16 +147,21 @@ def pull_data(table_name="applicants"):
                 insert_data = _prepare_insert_data(new_entries)
                 with connect_to_db() as conn:
                     with conn.cursor() as cur:
+                        columns = [
+                            "program", "comments", "date_added", "url", "status", "term",
+                            "us_or_international", "gpa", "gre", "gre_v", "gre_aw", "degree",
+                            "llm_generated_program", "llm_generated_university"
+                        ]
                         cur.executemany(
-                            f"""
-                            INSERT INTO {table_name} (
-                                program, comments, date_added, url, status, term, 
-                                us_or_international, gpa, gre, gre_v, gre_aw, degree, 
-                                llm_generated_program, llm_generated_university
-                            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                            ON CONFLICT (url) DO NOTHING;
-                        """,
-                            insert_data,
+                            sql.SQL("""
+                                INSERT INTO {table} ({fields})
+                                VALUES ({placeholders})
+                                ON CONFLICT (url) DO NOTHING
+                            """).format(
+                                table=sql.Identifier(table_name),
+                                fields=sql.SQL(",").join(map(sql.Identifier, columns)),
+                                placeholders=sql.SQL(",").join(sql.Placeholder() * len(columns))
+                            ), insert_data
                         )
                         conn.commit()
 
@@ -162,10 +170,9 @@ def pull_data(table_name="applicants"):
         except (requests.RequestException, psycopg.Error, ValueError) as e:
             print(f"Error in pull_data: {e}")
             return jsonify({"error": "Busy"}), 409
-        finally:
-            scrape_lock.release()
 
-    return jsonify({"message": "Success"}), 200
+    # return jsonify({"message": "Success"}), 200
+    return redirect(url_for("pages.home"))
 
 
 @bp.route("/update_analysis", methods=["POST"])
@@ -181,9 +188,8 @@ def update_analysis():
         try:
             query_data(execute_query)
             print("Analysis updated successfully")
-            return jsonify({"message": "Success"}), 200
+            # return jsonify({"message": "Success"}), 200
+            return redirect(url_for("pages.home"))
         except (requests.RequestException, psycopg.Error, ValueError) as e:
             print(f"Error in pull_data: {e}")
             return jsonify({"error": "Busy"}), 409
-        finally:
-            scrape_lock.release()

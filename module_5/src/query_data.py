@@ -4,7 +4,9 @@ Database query module for TheGradCafe data analysis.
 
 import os
 import psycopg
+from psycopg import sql
 
+table_ident = sql.Identifier("applicants")
 
 def connect_to_db():
     """
@@ -39,8 +41,8 @@ def execute_query(query, multi_row=False):
                 results = result[0] if result else None
     return results
 
-
-def query_data(execute_query_cb, table="applicants"):
+# def query_data(execute_query_cb, table="applicants"):
+def query_data(execute_query_cb):
     """
     Run predefined analysis queries on the applicants table.
 
@@ -53,117 +55,165 @@ def query_data(execute_query_cb, table="applicants"):
 
     # Query 1
     q1 = execute_query_cb(
-        f"""
-        SELECT COUNT(*) 
-        FROM {table}
-        WHERE term LIKE '%Fall 2025%'
-        """
+        sql.SQL("""
+            SELECT COUNT(*) FROM {table} WHERE term LIKE {term}
+        """).format(
+            table=table_ident,
+            term=sql.Literal('%Fall 2025%')
+        )
     )
 
     # Query 2
     q2 = execute_query_cb(
-        f"""
-        SELECT CAST(
-            (COUNT(CASE WHEN us_or_international = 'International' THEN 1 END) * 100.0 / COUNT(*)) AS DECIMAL(4,2)
+        sql.SQL("""
+            SELECT CAST(
+                (COUNT(CASE WHEN us_or_international = 'International' THEN 1 END) * 100.0 / COUNT(*)) 
+                AS DECIMAL(4,2)
+            )
+            FROM {table}
+        """).format(
+        table=table_ident
         )
-        FROM {table}
-        """
     )
 
     # Query 3a–3d
-    q3a = execute_query_cb(f"SELECT AVG(gpa) FROM {table} WHERE gpa IS NOT NULL")
-    q3b = execute_query_cb(f"SELECT AVG(gre) FROM {table} WHERE gre IS NOT NULL")
-    q3c = execute_query_cb(f"SELECT AVG(gre_v) FROM {table} WHERE gre_v IS NOT NULL")
-    q3d = execute_query_cb(f"SELECT AVG(gre_aw) FROM {table} WHERE gre_aw IS NOT NULL")
+    q3a = execute_query_cb(
+        sql.SQL("""
+            SELECT AVG(gpa) FROM {table} WHERE gpa IS NOT NULL"""
+        ).format(
+            table=table_ident
+        )
+    )
+    q3b = execute_query_cb(
+        sql.SQL("""
+            SELECT AVG(gre) FROM {table} WHERE gre IS NOT NULL"""
+        ).format(
+            table=table_ident
+        )
+    )
+    q3c = execute_query_cb(
+        sql.SQL("""
+            SELECT AVG(gre_v) FROM {table} WHERE gre_v IS NOT NULL"""
+        ).format(
+            table=table_ident
+        )
+    )
+    q3d = execute_query_cb(
+        sql.SQL("""
+            SELECT AVG(gre_aw) FROM {table} WHERE gre_aw IS NOT NULL"""
+        ).format(
+            table=table_ident
+        )
+    )
 
     # Query 4
     q4 = execute_query_cb(
-        f"""
-        SELECT AVG(gpa) 
-        FROM {table}
-        WHERE us_or_international = 'American' 
-        AND term LIKE '%Fall 2025%' 
-        AND gpa IS NOT NULL
-        """
+        sql.SQL("""
+            SELECT AVG(gpa) 
+            FROM {table} 
+            WHERE us_or_international = {us} AND term LIKE {term} AND gpa IS NOT NULL
+        """).format(
+            table=table_ident,
+            us=sql.Literal('American'),
+            term=sql.Literal('%Fall 2025%')
+        )
     )
 
     # Query 5
     q5 = execute_query_cb(
-        f"""
-        SELECT CAST(
-            (COUNT(CASE WHEN status LIKE '%Accepted%' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)) AS DECIMAL(5,2)
+        sql.SQL("""
+            SELECT CAST(
+                (COUNT(CASE WHEN status LIKE {status} THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)) 
+                AS DECIMAL(5,2)
+            )
+            FROM {table}
+            WHERE term LIKE {term}
+        """).format(
+            table=table_ident,
+            status=sql.Literal('%Accepted%'),
+            term=sql.Literal('%Fall 2025%')
         )
-        FROM {table}
-        WHERE term LIKE '%Fall 2025%'
-        """
     )
 
     # Query 6
     q6 = execute_query_cb(
-        f"""
-        SELECT AVG(gpa) 
-        FROM {table}
-        WHERE term LIKE '%Fall 2025%' 
-        AND status LIKE '%Accepted%' 
-        AND gpa IS NOT NULL
-        """
+        sql.SQL("""
+            SELECT AVG(gpa) 
+            FROM {table} 
+            WHERE term LIKE {term} AND status LIKE {status} AND gpa IS NOT NULL
+        """).format(
+            table=table_ident,
+            term=sql.Literal('%Fall 2025%'),
+            status=sql.Literal('%Accepted%')
+        )
     )
 
     # Query 7
     q7 = execute_query_cb(
-        f"""
-        SELECT COUNT(*) 
-        FROM {table}
-        WHERE llm_generated_program LIKE '%Computer Science' 
-        AND llm_generated_university LIKE '%Johns Hopkins%'
-        """
+        sql.SQL("""
+            SELECT COUNT(*) 
+            FROM {table} 
+            WHERE llm_generated_program LIKE {program} 
+            AND llm_generated_university LIKE {univ}
+        """).format(
+            table=table_ident,
+            program=sql.Literal('%Computer Science'),
+            univ=sql.Literal('%Johns Hopkins%')
+        )
     )
 
     # Query 8
     q8 = execute_query_cb(
-        f"""
-        SELECT COUNT(*) 
-        FROM {table}
-        WHERE date_added >= '2025-01-01' 
-        AND date_added < '2026-01-01' 
-        AND status LIKE '%Accepted%' 
-        AND llm_generated_program LIKE '%Computer Science' 
-        AND llm_generated_university LIKE '%Georgetown%'
-        """
+        sql.SQL("""
+            SELECT COUNT(*) 
+            FROM {table} 
+            WHERE date_added >= {start} 
+            AND date_added < {end} 
+            AND status LIKE {status} 
+            AND llm_generated_program LIKE {program} 
+            AND llm_generated_university LIKE {univ}
+        """).format(
+            table=table_ident,
+            start=sql.Literal('2025-01-01'),
+            end=sql.Literal('2026-01-01'),
+            status=sql.Literal('%Accepted%'),
+            program=sql.Literal('%Computer Science'),
+            univ=sql.Literal('%Georgetown%')
+        )
     )
 
     # Query 9
     q9 = execute_query_cb(
-        f"""
-        SELECT 
-            degree,
-            CAST(
-                (COUNT(CASE WHEN status LIKE '%Accepted%' THEN 1 END) * 100.0 / COUNT(*)) AS double precision
-            ) as acceptance_rate
-        FROM {table}
-        WHERE degree IS NOT NULL
-        GROUP BY degree 
-        ORDER BY acceptance_rate ASC
-        """,
-        multi_row=True,
+        sql.SQL("""
+            SELECT degree,
+                CAST((COUNT(CASE WHEN status LIKE {status} THEN 1 END) * 100.0 / COUNT(*)) AS double precision) AS acceptance_rate
+            FROM {table}
+            WHERE degree IS NOT NULL
+            GROUP BY degree
+            ORDER BY acceptance_rate ASC
+        """).format(
+            table=table_ident,
+            status=sql.Literal('%Accepted%')
+        ),
+        multi_row=True
     )
 
     # Query 10
     q10 = execute_query_cb(
-        f"""
-        SELECT 
-            llm_generated_university,
-            CAST(
-                (COUNT(CASE WHEN status LIKE '%Accepted%' THEN 1 END) * 100.0 / COUNT(*)) AS float
-            ) as acceptance_rate
-        FROM {table}
-        WHERE llm_generated_university IS NOT NULL 
-        GROUP BY llm_generated_university 
-        HAVING COUNT(*) >= 25
-        ORDER BY acceptance_rate ASC
-        LIMIT 10
-        """,
-        multi_row=True,
+        sql.SQL("""
+            SELECT llm_generated_university,
+                CAST((COUNT(CASE WHEN status LIKE {status} THEN 1 END) * 100.0 / COUNT(*)) AS float) AS acceptance_rate
+            FROM {table}
+            WHERE llm_generated_university IS NOT NULL
+            GROUP BY llm_generated_university
+            HAVING COUNT(*) >= 25
+            ORDER BY acceptance_rate ASC
+            LIMIT 10
+        """).format(
+            table=table_ident,
+            status=sql.Literal('%Accepted%')
+        ),
+        multi_row=True
     )
 
     return {
