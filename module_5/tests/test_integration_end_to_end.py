@@ -1,3 +1,7 @@
+"""
+Test module for end-to-end integration testing.
+"""
+
 import pytest
 import module_2.clean as clean_module
 from module_4.src.app.pages import pull_data
@@ -5,13 +9,18 @@ from module_4.src.query_data import query_data
 
 
 @pytest.mark.integration
-def test_end_to_end_flow(client, mock_llm, connect_to_db, example_applicant_data, monkeypatch):
+def test_end_to_end_flow(
+    client, connect_to_db, example_applicant_data, monkeypatch
+):
+    """
+    Test complete end-to-end workflow from scraping to display
+    """
     _, cur = connect_to_db
 
     monkeypatch.setattr(
-        "module_4.src.app.pages.query_data", 
-        lambda execute_query, table="test": query_data(execute_query, "test")
-        )
+        "module_4.src.app.pages.query_data",
+        lambda execute_query, table="test": query_data(execute_query, "test"),
+    )
     monkeypatch.setattr(clean_module, "clean_data", lambda data: example_applicant_data)
     monkeypatch.setattr(pull_data, "__defaults__", ("test",))
 
@@ -35,12 +44,19 @@ def test_end_to_end_flow(client, mock_llm, connect_to_db, example_applicant_data
     resp_render = client.get("/")
     assert resp_render.status_code == 200
 
+
 @pytest.mark.integration
-def test_multiple_pulls_consistent(client, mock_llm, connect_to_db,
-                                   example_duplicate_applicant_data, monkeypatch):
+def test_multiple_pulls_consistent(
+    client, connect_to_db, example_duplicate_applicant_data, monkeypatch
+):
+    """
+    Test consistency across multiple data pulls
+    """
     _, cur = connect_to_db
 
-    monkeypatch.setattr(clean_module, "clean_data", lambda data: example_duplicate_applicant_data)
+    monkeypatch.setattr(
+        clean_module, "clean_data", lambda data: example_duplicate_applicant_data
+    )
     monkeypatch.setattr(pull_data, "__defaults__", ("test",))
 
     # Running POST /pull-data twice with overlapping data remains consistent with uniqueness policy

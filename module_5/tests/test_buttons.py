@@ -1,17 +1,29 @@
+"""
+Test module for button functionality and user interactions.
+"""
+
 import pytest
 
+
 @pytest.mark.buttons
-def test_pull_data_success(client, mock_llm, monkeypatch, example_applicant_data):
+def test_pull_data_success(client, monkeypatch, example_applicant_data):
+    """
+    Test successful data pulling functionality
+    """
+
     # Test POST /pull-data (or whatever you named the path posting the pull data request)
     def fake_loader():
         return example_applicant_data
 
     monkeypatch.setattr(
-        "module_4.src.app.pages.scrape.scrape_survey_page", 
-        lambda pages=1: fake_loader
-        )
-    monkeypatch.setattr("module_4.src.app.pages.scrape.scrape_raw_data", lambda data: fake_loader)
-    monkeypatch.setattr("module_4.src.app.pages.clean.clean_data", lambda data: fake_loader)
+        "module_4.src.app.pages.scrape.scrape_survey_page", lambda pages=1: fake_loader
+    )
+    monkeypatch.setattr(
+        "module_4.src.app.pages.scrape.scrape_raw_data", lambda data: fake_loader
+    )
+    monkeypatch.setattr(
+        "module_4.src.app.pages.clean.clean_data", lambda data: fake_loader
+    )
 
     # Returns 200
     resp = client.post("/pull_data")
@@ -19,24 +31,28 @@ def test_pull_data_success(client, mock_llm, monkeypatch, example_applicant_data
     # Triggers the loader with the rows from the scraper
     assert b"Success" in resp.data
 
+
 @pytest.mark.buttons
-def test_update_analysis_success(client, mock_llm, monkeypatch):
+def test_update_analysis_success(client, fake_results, monkeypatch):
+    """
+    Test successful analysis update functionality
+    """
     # Test POST /update-analysis
-    fake_results = {
-        "q1": 6640, "q2": 60.60, "q3a": 3.79, "q3b": 177.39, "q3c": 159.67, "q3d": 6.35,
-        "q4": 3.77, "q5": 35.94, "q6": 3.76, "q7": 13, "q8": 0, "q9": [], "q10": []
-    }
     monkeypatch.setattr(
         "module_4.src.app.pages.query_data",
-        lambda execute_query, table="applicants": fake_results
-        )
+        lambda execute_query, table="applicants": fake_results,
+    )
     # Returns 200 when not busy
     resp = client.post("/update_analysis")
     assert resp.status_code == 200
     assert b"Success" in resp.data
 
+
 @pytest.mark.buttons
-def test_busy_gating(client, mock_llm, monkeypatch):
+def test_busy_gating(client, monkeypatch):
+    """
+    Test busy gating functionality to prevent concurrent operations
+    """
     # Test busy gating
     monkeypatch.setattr("module_4.src.app.pages.scrape_running", True)
 

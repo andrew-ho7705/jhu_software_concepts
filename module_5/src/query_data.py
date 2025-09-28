@@ -1,3 +1,7 @@
+"""
+Database query module for TheGradCafe data analysis.
+"""
+
 import os
 import psycopg
 
@@ -25,21 +29,18 @@ def execute_query(query, multi_row=False):
         Query result: single value or list of rows.
     """
 
-    conn = connect_to_db()
-    cursor = conn.cursor()
-    results = None
-    cursor.execute(query)
-    if multi_row:
-        results = cursor.fetchall()
-    else:
-        result = cursor.fetchone()
-        results = result[0] if result else None
-    cursor.close()
-    conn.close()
+    with connect_to_db() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            if multi_row:
+                results = cursor.fetchall()
+            else:
+                result = cursor.fetchone()
+                results = result[0] if result else None
     return results
 
 
-def query_data(execute_query, table="applicants"):
+def query_data(execute_query_cb, table="applicants"):
     """
     Run predefined analysis queries on the applicants table.
 
@@ -51,73 +52,75 @@ def query_data(execute_query, table="applicants"):
     """
 
     # Query 1
-    q1 = execute_query(
+    q1 = execute_query_cb(
         f"""
         SELECT COUNT(*) 
         FROM {table}
         WHERE term LIKE '%Fall 2025%'
-        """)
+        """
+    )
 
     # Query 2
-    q2 = execute_query(
+    q2 = execute_query_cb(
         f"""
         SELECT CAST(
             (COUNT(CASE WHEN us_or_international = 'International' THEN 1 END) * 100.0 / COUNT(*)) AS DECIMAL(4,2)
         )
         FROM {table}
-        """)
+        """
+    )
 
     # Query 3a–3d
-    q3a = execute_query(
-        f"SELECT AVG(gpa) FROM {table} WHERE gpa IS NOT NULL")
-    q3b = execute_query(
-        f"SELECT AVG(gre) FROM {table} WHERE gre IS NOT NULL")
-    q3c = execute_query(
-        f"SELECT AVG(gre_v) FROM {table} WHERE gre_v IS NOT NULL")
-    q3d = execute_query(
-        f"SELECT AVG(gre_aw) FROM {table} WHERE gre_aw IS NOT NULL")
+    q3a = execute_query_cb(f"SELECT AVG(gpa) FROM {table} WHERE gpa IS NOT NULL")
+    q3b = execute_query_cb(f"SELECT AVG(gre) FROM {table} WHERE gre IS NOT NULL")
+    q3c = execute_query_cb(f"SELECT AVG(gre_v) FROM {table} WHERE gre_v IS NOT NULL")
+    q3d = execute_query_cb(f"SELECT AVG(gre_aw) FROM {table} WHERE gre_aw IS NOT NULL")
 
     # Query 4
-    q4 = execute_query(
+    q4 = execute_query_cb(
         f"""
         SELECT AVG(gpa) 
         FROM {table}
         WHERE us_or_international = 'American' 
         AND term LIKE '%Fall 2025%' 
         AND gpa IS NOT NULL
-        """)
+        """
+    )
 
     # Query 5
-    q5 = execute_query(
+    q5 = execute_query_cb(
         f"""
         SELECT CAST(
             (COUNT(CASE WHEN status LIKE '%Accepted%' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0)) AS DECIMAL(5,2)
         )
         FROM {table}
         WHERE term LIKE '%Fall 2025%'
-        """)
+        """
+    )
 
     # Query 6
-    q6 = execute_query(
+    q6 = execute_query_cb(
         f"""
         SELECT AVG(gpa) 
         FROM {table}
         WHERE term LIKE '%Fall 2025%' 
         AND status LIKE '%Accepted%' 
         AND gpa IS NOT NULL
-        """)
+        """
+    )
 
     # Query 7
-    q7 = execute_query(
+    q7 = execute_query_cb(
         f"""
         SELECT COUNT(*) 
         FROM {table}
         WHERE llm_generated_program LIKE '%Computer Science' 
         AND llm_generated_university LIKE '%Johns Hopkins%'
-        """)
+        """
+    )
 
     # Query 8
-    q8 = execute_query(
+    q8 = execute_query_cb(
         f"""
         SELECT COUNT(*) 
         FROM {table}
@@ -126,10 +129,11 @@ def query_data(execute_query, table="applicants"):
         AND status LIKE '%Accepted%' 
         AND llm_generated_program LIKE '%Computer Science' 
         AND llm_generated_university LIKE '%Georgetown%'
-        """)
+        """
+    )
 
     # Query 9
-    q9 = execute_query(
+    q9 = execute_query_cb(
         f"""
         SELECT 
             degree,
@@ -141,10 +145,11 @@ def query_data(execute_query, table="applicants"):
         GROUP BY degree 
         ORDER BY acceptance_rate ASC
         """,
-        multi_row=True)
+        multi_row=True,
+    )
 
     # Query 10
-    q10 = execute_query(
+    q10 = execute_query_cb(
         f"""
         SELECT 
             llm_generated_university,
@@ -158,17 +163,21 @@ def query_data(execute_query, table="applicants"):
         ORDER BY acceptance_rate ASC
         LIMIT 10
         """,
-        multi_row=True)
+        multi_row=True,
+    )
 
     return {
         "q1": q1,
         "q2": q2,
-        "q3a": q3a, "q3b": q3b, "q3c": q3c, "q3d": q3d,
+        "q3a": q3a,
+        "q3b": q3b,
+        "q3c": q3c,
+        "q3d": q3d,
         "q4": q4,
         "q5": q5,
         "q6": q6,
         "q7": q7,
         "q8": q8,
         "q9": q9,
-        "q10": q10
+        "q10": q10,
     }

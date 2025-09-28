@@ -1,3 +1,7 @@
+"""
+Data loading and processing utilities for TheGradCafe analysis.
+"""
+
 import datetime
 import os
 import re
@@ -86,35 +90,33 @@ def load_to_database(table):
         Nothing
     """
 
-    conn = psycopg.connect(os.environ.get("DATABASE_URL"))
-    data = load_data("../module_2/llm_extend_applicant_data.json")
-
-    with conn.cursor() as cur:
-        for record in data:
-            cur.execute(
-                f"""
-                INSERT INTO {table} (
-                    program, comments, date_added, url, status, term, 
-                    us_or_international, gpa, gre, gre_v, gre_aw, degree, 
-                    llm_generated_program, llm_generated_university) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """,
-                (
-                    record.get("program"),
-                    record.get("comments"),
-                    parse_date(record.get("date_added")),
-                    record.get("url"),
-                    record.get("status"),
-                    record.get("term"),
-                    record.get("US/International"),
-                    handle_score(record.get("GPA")),
-                    handle_score(record.get("GRE")),
-                    handle_score(record.get("GRE_V")),
-                    handle_score(record.get("GRE_AW")),
-                    record.get("Degree"),
-                    record.get("llm-generated-program"),
-                    record.get("llm-generated-university"),
-                ),
-            )
-    conn.commit()
-    conn.close()
+    with psycopg.connect(os.environ.get("DATABASE_URL")) as conn:
+        with conn.cursor() as cur:
+            data = load_data("../module_2/llm_extend_applicant_data.json")
+            for record in data:
+                cur.execute(
+                    f"""
+                    INSERT INTO {table} (
+                        program, comments, date_added, url, status, term, 
+                        us_or_international, gpa, gre, gre_v, gre_aw, degree, 
+                        llm_generated_program, llm_generated_university) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                    (
+                        record.get("program"),
+                        record.get("comments"),
+                        parse_date(record.get("date_added")),
+                        record.get("url"),
+                        record.get("status"),
+                        record.get("term"),
+                        record.get("US/International"),
+                        handle_score(record.get("GPA")),
+                        handle_score(record.get("GRE")),
+                        handle_score(record.get("GRE_V")),
+                        handle_score(record.get("GRE_AW")),
+                        record.get("Degree"),
+                        record.get("llm-generated-program"),
+                        record.get("llm-generated-university"),
+                    ),
+                )
+            conn.commit()
